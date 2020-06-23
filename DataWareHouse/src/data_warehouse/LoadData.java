@@ -39,28 +39,27 @@ public class LoadData {
 		System.out.println("connect success");
 		try {
 			Statement st = connection.createStatement();
-			ResultSet rs = st.executeQuery("select * from config");
-			String src, des, user_des, pw_des, delimited, field, src_type;
+			ResultSet rs = st.executeQuery("select * from logs join config on config.id = logs.id");
+			String file_name, status, src_type, delimited,source, des,user_des,pw_des,field;
+			int id;
 
 			while (rs.next()) {
-				src        = rs.getString("source");
-				des        = rs.getString("destination");
-				user_des   = rs.getString("user_des");
-				pw_des     = rs.getString("pw_des");
-				delimited  = rs.getString("delimited");
-				src_type   = rs.getString("src_type");
-				field  	   = rs.getString("field");
-									
-				if (src_type.equals("xlsx")) {
-					loadFromXLSX(src, des, user_des, pw_des, delimited, field);
-				} else if(src_type.equals("csv")) {
-					loadFromCSVOrTXT(src, des, user_des, pw_des, delimited, field);
-				} else if(src_type.equals("txt")) {
-					String delimitedTXT = "	";
-					loadFromCSVOrTXT(src, des, user_des, pw_des, delimitedTXT, field);
-				}
+				id        	= rs.getInt("id");
+				file_name 	= rs.getString("file_name");
+				status 	  	= rs.getString("status");
+				src_type  	= rs.getString("src_type");
+				delimited 	= rs.getString("delimited");
+				source 	  	= rs.getString("source");
+				des 		= rs.getString("destination");
+				user_des	= rs.getString("user_des");
+				pw_des  	= rs.getString("pw_des");
+				field	    = rs.getString("field");
 				
-				System.out.println("success" + src);
+				if (src_type.equals("xlsx")) {
+					loadFromXLSX(id, status, file_name, source, des, user_des, pw_des, delimited, field);
+				}
+			
+				
 			}
 			
 			
@@ -70,8 +69,12 @@ public class LoadData {
 
 	}
 	
-	public void loadFromXLSX(String source_file, String des, String user_des,
+	public void loadFromXLSX(int id, String status ,String file_name,String source, String des, String user_des,
 			String pw_des, String delimited, String field) {
+		StringBuffer file = new StringBuffer(source);
+		file.append("/");
+		file.append(file_name);
+		String filePath = file.toString();
 		
 		Connection connection = null;
 		int batchSize = 20;
@@ -85,7 +88,7 @@ public class LoadData {
 			
 			long start = System.currentTimeMillis();
 
-			FileInputStream inputStream = new FileInputStream(source_file);
+			FileInputStream inputStream = new FileInputStream(filePath);
 			Workbook workbook = new XSSFWorkbook(inputStream);
 
 			Sheet firstSheet = workbook.getSheetAt(0);
@@ -213,6 +216,9 @@ public class LoadData {
 			long end = System.currentTimeMillis();
 			System.out.printf("Import done in %d ms\n", (end - start));
 			
+			updateLogs(file_name);
+			
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
@@ -223,6 +229,28 @@ public class LoadData {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	public void updateLogs(String file_name) {
+		Date endDate = new Date();
+		
+		Connection connection = null;
+		try {
+			connection = DriverManager.getConnection(Main.JDBC_CONNECTION_URL, Main.username,
+					Main.password);
+			  String query = "update logs set status = ?, time_upload = ? where file_name = ?";
+		      PreparedStatement preparedStmt = connection.prepareStatement(query);
+		      preparedStmt.setString(1,"TER");
+//		      preparedStmt.setDate(2, java.sql.Date.valueOf(java.time.LocalDate.now()));
+		      preparedStmt.setTimestamp(2, new java.sql.Timestamp(endDate.getTime()));
+		      preparedStmt.setString(3, file_name);
+
+		      preparedStmt.executeUpdate();
+		      System.out.println("success" + file_name);
+		      connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void loadFromCSVOrTXT(String source_file, String des, String user_des,
