@@ -16,6 +16,6 @@
 	<classpathentry kind="lib" path="/Users/dangtrunghieu/Downloads/poi-4.1.2/poi-ooxml-schemas-4.1.2.jar"/>
 	<classpathentry kind="lib" path="/Users/dangtrunghieu/Downloads/poi-4.1.2/poi-scratchpad-4.1.2.jar"/>
 	<classpathentry kind="lib" path="/Users/dangtrunghieu/Downloads/poi-4.1.2/xmlbeans-3.1.0.jar"/>
-	<classpathentry kind="lib" path="/Users/dangtrunghieu/Desktop/DataWareHouse/DataWareHouse/commons-lang-2.4.jar"/>
+	<classpathentry kind="lib" path="/Users/dangtrunghieu/Downloads/poi-4.1.2/commons-lang-2.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
