@@ -241,7 +241,6 @@ public class LoadData {
 			  String query = "update logs set status = ?, time_upload = ? where file_name = ?";
 		      PreparedStatement preparedStmt = connection.prepareStatement(query);
 		      preparedStmt.setString(1,"TER");
-//		      preparedStmt.setDate(2, java.sql.Date.valueOf(java.time.LocalDate.now()));
 		      preparedStmt.setTimestamp(2, new java.sql.Timestamp(endDate.getTime()));
 		      preparedStmt.setString(3, file_name);
 
