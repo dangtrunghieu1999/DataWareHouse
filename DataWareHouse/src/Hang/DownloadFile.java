@@ -24,7 +24,6 @@ public class DownloadFile {
 
 		String hostname = "drive.ecepvn.org";
 		int port = 2227;
-
 		// Kết nối tới SSH server:
 		boolean success = ssh.Connect(hostname, port);
 		if (success != true) {
