@@ -1,8 +1,5 @@
 package Hang;
 
-//import com.chilkatsoft.CkGlobal;
-//import com.chilkatsoft.CkScp;
-//import com.chilkatsoft.CkSsh;
 import com.chilkatsoft.*;
 
 public class DownloadFile {
@@ -17,10 +14,6 @@ public class DownloadFile {
 
 	public static void main(String argv[]) {
 		CkSsh ssh = new CkSsh();
-		CkGlobal ck = new CkGlobal();
-		ck.UnlockBundle("NguyenThiThuyHang");// mã mở khóa
-		// Nó sẽ chứa chuỗi chính xác được truyền cho nó và sẽ cung cấp chi tiết về lý
-		// do tại sao nó thất bại.
 
 		String hostname = "drive.ecepvn.org";
 		int port = 2227;
