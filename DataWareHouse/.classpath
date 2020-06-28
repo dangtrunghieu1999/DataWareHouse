@@ -22,6 +22,7 @@
 	<classpathentry kind="lib" path="/Users/dangtrunghieu/Downloads/poi-4.1.2/poi-scratchpad-4.1.2.jar"/>
 	<classpathentry kind="lib" path="/Users/dangtrunghieu/Downloads/poi-4.1.2/xmlbeans-3.1.0.jar"/>
 	<classpathentry kind="lib" path="/Users/dangtrunghieu/Downloads/poi-4.1.2/commons-lang-2.4.jar"/>
-	<classpathentry kind="lib" path="jsch-0.1.52.jar"/>
+	<classpathentry kind="lib" path="chilkat.jar"/>
+	<classpathentry kind="lib" path="chilkat.dll"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
