@@ -37,7 +37,7 @@ public class DownloadFile {
 			System.out.println(scp.lastErrorText());
 			return;
 		}
-		scp.put_SyncMustMatch("sinhvien*.*");
+		scp.put_SyncMustMatch("sinhvien");// down tất cả các file bắt đầu bằng sinhvien
 		String remotePath = "/volume1/ECEP/song.nguyen/DW_2020/data";
 		String localPath = "C:\\Users\\Thuy Hang\\Downloads\\FileNopBai";
 
