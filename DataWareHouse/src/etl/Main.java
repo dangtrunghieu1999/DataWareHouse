@@ -1,4 +1,4 @@
-package data_warehouse;
+package etl;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

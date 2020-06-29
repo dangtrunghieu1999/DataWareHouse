@@ -1,4 +1,4 @@
-package data_warehouse;
+package etl;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -24,11 +24,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class LoadData {
 	
-	private static final String SQL_INSERT = "INSERT INTO ${table} (${keys}) VALUES (${values})";
+	private static final String SQL_INSERT = "INSERT INTO ${table} VALUES (${values})";
 	private static final String TABLE_REGEX = "\\$\\{table\\}";
-	private static final String KEYS_REGEX = "\\$\\{keys\\}";
 	private static final String VALUES_REGEX = "\\$\\{values\\}";
-	int counter = 1;
 	private Connection connection;
 
 	public LoadData(Connection connection) {
@@ -40,8 +38,8 @@ public class LoadData {
 		try {
 			Statement st = connection.createStatement();
 			ResultSet rs = st.executeQuery("select * from logs join config on config.id = logs.id");
-			String file_name, status, src_type, delimited,source, des,user_des,pw_des,field;
-			int id;
+			String file_name, status, src_type, delimited,source, des,user_des,pw_des,field,table_name;
+			int id, ignore;
 
 			while (rs.next()) {
 				id        	= rs.getInt("id");
@@ -54,12 +52,17 @@ public class LoadData {
 				user_des	= rs.getString("user_des");
 				pw_des  	= rs.getString("pw_des");
 				field	    = rs.getString("field");
+				table_name	= rs.getString("table_name");
+				ignore 		= rs.getInt("ignore");
 				
 				if (src_type.equals("xlsx")) {
-					loadFromXLSX(id, status, file_name, source, des, user_des, pw_des, delimited, field);
+					loadFromXLSX(id, status, file_name, source, des,
+							user_des, pw_des, delimited, field, table_name);
 				}
-			
-				
+				if (src_type.equals("csv") || src_type.equals("txt")) {
+					loadFromCSVOrTXT(id, status, file_name, source, des, 
+							user_des, pw_des, delimited, field,table_name,ignore);
+				}
 			}
 			
 			
@@ -69,12 +72,53 @@ public class LoadData {
 
 	}
 	
-	public void loadFromXLSX(int id, String status ,String file_name,String source, String des, String user_des,
-			String pw_des, String delimited, String field) {
-		StringBuffer file = new StringBuffer(source);
-		file.append("/");
-		file.append(file_name);
-		String filePath = file.toString();
+	public String filePath(String source, String file_name) {
+		StringBuffer sourceFile = new StringBuffer(source);
+		sourceFile.append("/");
+		sourceFile.append(file_name);
+		String filePath = sourceFile.toString();
+		return filePath;
+		
+	}
+	
+	public String convertQuery(String field) {
+		String [] headerRow = field.split(",");
+		
+		String questionmarks = StringUtils.repeat("?,", headerRow.length);
+		
+		questionmarks = (String) questionmarks.subSequence(0, questionmarks
+				.length() - 1);
+		String query = SQL_INSERT.replaceFirst(TABLE_REGEX, "Student");
+		
+		query = query.replaceFirst(VALUES_REGEX, questionmarks);
+		return query;
+	}
+	
+	public void updateLogs(String file_name) {
+		Date endDate = new Date();
+		
+		Connection connection = null;
+		try {
+			connection = DriverManager.getConnection(Main.JDBC_CONNECTION_URL, Main.username,
+					Main.password);
+			  String query = "update logs set status = ?, time_upload = ? where file_name = ?";
+		      PreparedStatement preparedStmt = connection.prepareStatement(query);
+		      preparedStmt.setString(1,"TER");
+		      preparedStmt.setTimestamp(2, new java.sql.Timestamp(endDate.getTime()));
+		      preparedStmt.setString(3, file_name);
+
+		      preparedStmt.executeUpdate();
+		      System.out.println("success update logs" + file_name);
+		      connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void loadFromXLSX(int id, String status ,String file_name,
+							String source, String des, String user_des,
+							String pw_des, String delimited, String field, String table_name) {
+		String filePath = filePath(source, file_name);
 		
 		Connection connection = null;
 		int batchSize = 20;
@@ -84,8 +128,6 @@ public class LoadData {
 			Class.forName("com.mysql.jdbc.Driver");
 			connection = DriverManager.getConnection(des, user_des, pw_des);
 			connection.setAutoCommit(false);
-			
-			
 			long start = System.currentTimeMillis();
 
 			FileInputStream inputStream = new FileInputStream(filePath);
@@ -94,20 +136,12 @@ public class LoadData {
 			Sheet firstSheet = workbook.getSheetAt(0);
 			Iterator<Row> rowIterator = firstSheet.iterator();
 
-			
-			String [] headerRow = field.split(",");
-			String questionmarks = StringUtils.repeat("?,", headerRow.length);
-			questionmarks = (String) questionmarks.subSequence(0, questionmarks
-					.length() - 1);
-			String query = SQL_INSERT.replaceFirst(TABLE_REGEX, "Student");
-			query = query
-					.replaceFirst(KEYS_REGEX, StringUtils.join(headerRow, ","));
-			query = query.replaceFirst(VALUES_REGEX, questionmarks);
-			
+			String query = convertQuery(field);
 			System.out.println(query);
 			PreparedStatement statement = connection.prepareStatement(query);
 			
 			int count = 0;
+			int counterSecond = 2;
 			rowIterator.next();
 			
 
@@ -118,86 +152,40 @@ public class LoadData {
 				while (cellIterator.hasNext()) {
 					Cell nextCell = cellIterator.next();
 					
+					
 					int columnIndex = nextCell.getColumnIndex();
 
 					switch (columnIndex) {
 					case 0:
-						statement.setInt(1, counter);
-						counter++;
+						int stt = (int) nextCell.getNumericCellValue();
+						statement.setInt(1, stt);
 						break;
-					case 1:
+					default:
 						switch (nextCell.getCellType()) {
 						case NUMERIC:
-							Double masv = (Double) nextCell.getNumericCellValue();
-							statement.setDouble(2, masv);
+							Double valueDouble = (Double) nextCell.getNumericCellValue();
+							statement.setDouble(counterSecond, valueDouble);
 							break;
 						case STRING:
-							String mssvString = nextCell.getStringCellValue();
-							statement.setString(2, mssvString);
+							String valueString = nextCell.getStringCellValue();
+							statement.setString(counterSecond, valueString);
+							break;
+						case BLANK:
+							statement.setString(counterSecond, "null");
+							break;
+						case _NONE:
+							Date valueDate = nextCell.getDateCellValue();
+							statement.setTimestamp(counterSecond, new Timestamp(valueDate.getTime()));
 							break;
 						default:
 							break;
 						}
-
-						break;
-					case 2:
-						String first_name = nextCell.getStringCellValue();
-						statement.setString(3, first_name);
-						break;
-					case 3:
-						String last_name = nextCell.getStringCellValue();
-						statement.setString(4, last_name);
-						break;
-					case 4:
-						switch (nextCell.getCellType()) {
-						case STRING: 
-							String birthdayString = (String) nextCell.getStringCellValue();
-							statement.setString(5, birthdayString);
-							break;
-						default:
-							Date birthday = nextCell.getDateCellValue();
-							statement.setTimestamp(5, new Timestamp(birthday.getTime()));
-						}
-						break;
-					case 5:
-						String id_class = nextCell.getStringCellValue();
-						statement.setString(6, id_class);
-						break;
-					case 6:
-						String name_class = nextCell.getStringCellValue();
-						statement.setString(7, name_class);
-						break;
-					case 7:
-						switch (nextCell.getCellType()) {
-						case NUMERIC: 
-							Double phone = nextCell.getNumericCellValue();
-							statement.setDouble(8, phone);
-							break;
-							
-						case STRING:
-							String phoneString = nextCell.getStringCellValue();
-							statement.setString(8, phoneString);
-							break;
-							
-						default:
-							break;
-						}
-					
-						break;
-					case 8:
-						String email = nextCell.getStringCellValue();
-						statement.setString(9, email);
-						break;
-					case 9:
-						String home_town = nextCell.getStringCellValue();
-						statement.setString(10, home_town);
-						break;
-					case 10:
-						String notes = nextCell.getStringCellValue();
-						statement.setString(11, notes);
+						
+						counterSecond ++;
 						break;
 					}
 				}
+				counterSecond = 2;
 
 				statement.addBatch();
 
@@ -231,29 +219,12 @@ public class LoadData {
 		
 	}
 	
-	public void updateLogs(String file_name) {
-		Date endDate = new Date();
-		
-		Connection connection = null;
-		try {
-			connection = DriverManager.getConnection(Main.JDBC_CONNECTION_URL, Main.username,
-					Main.password);
-			  String query = "update logs set status = ?, time_upload = ? where file_name = ?";
-		      PreparedStatement preparedStmt = connection.prepareStatement(query);
-		      preparedStmt.setString(1,"TER");
-		      preparedStmt.setTimestamp(2, new java.sql.Timestamp(endDate.getTime()));
-		      preparedStmt.setString(3, file_name);
+	public void loadFromCSVOrTXT(int id, String status ,String file_name,
+								String source, String des, String user_des,
+								String pw_des, String delimited,
+								String field,String table_name,int ignore) {
 
-		      preparedStmt.executeUpdate();
-		      System.out.println("success" + file_name);
-		      connection.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void loadFromCSVOrTXT(String source_file, String des, String user_des,
-			String pw_des, String delimited, String field) {
+		String filePath = filePath(source, file_name);
 		
 		Connection connection = null;
 
@@ -263,15 +234,9 @@ public class LoadData {
 		
 		int START_LINE = 1;
 		int counter = START_LINE;
+		int start = 1;
 		
-		String [] headerRow = field.split(",");
-		String questionmarks = StringUtils.repeat("?,", headerRow.length);
-		questionmarks = (String) questionmarks.subSequence(0, questionmarks
-				.length() - 1);
-		String query = SQL_INSERT.replaceFirst(TABLE_REGEX, "Student");
-		query = query
-				.replaceFirst(KEYS_REGEX, StringUtils.join(headerRow, ","));
-		query = query.replaceFirst(VALUES_REGEX, questionmarks);
+		String query = convertQuery(field);
 		
 		System.out.println(query);
 		try {
@@ -280,7 +245,7 @@ public class LoadData {
 			connection = DriverManager.getConnection(des, user_des, pw_des);
 			connection.setAutoCommit(false);
 			
-			fis = new FileInputStream(source_file);
+			fis = new FileInputStream(filePath);
 			isr = new InputStreamReader(fis);
 			bReader = new BufferedReader(isr);
 			
@@ -296,21 +261,25 @@ public class LoadData {
 				} else {
 					if (counter > START_LINE) {
 						arrayData = line.split(delimited);
-						statement.setInt(1, this.counter);
-						for (int i = 1; i < arrayData.length; i++) {
-							statement.setString(i+1, arrayData[i]);
+						statement.setString(1, arrayData[0]);
+						for (int i = 1; i < arrayData.length + 1; i++) {
+							if (arrayData[i].equals("")) {
+								statement.setString(i+1, "null");
+							}else {
+								statement.setString(i+1, arrayData[i]);
+							}
 						}
 						statement.executeUpdate();
 					}
 					counter++;
-					this.counter++;
+					
 
 				}
 				connection.commit();
 
 			}
 			System.out.println("Insert success record");
-			
+			updateLogs(file_name);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
@@ -334,5 +303,5 @@ public class LoadData {
 		
 	}
 	
-	
+		
 }
