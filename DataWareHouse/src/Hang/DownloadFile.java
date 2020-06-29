@@ -1,76 +1,52 @@
 package Hang;
 
-import com.jcraft.jsch.*;
+import com.chilkatsoft.*;
 
 public class DownloadFile {
-
-	public void downloadFtp(String userName, String password, String host, int port, String pathDir) {
-		Session session = null;
-		Channel channel = null;
-
+	static {
 		try {
-			JSch ssh = new JSch();
-			// JSch.setConfig("StrictHostKeyChecking", "no");
-			session = ssh.getSession(userName, host, port);
-			//
-			java.util.Properties config = new java.util.Properties();
-			config.put("StrictHostKeyChecking", "no");
-			session.setConfig(config);
-			session.setPassword(password);
-			session.connect();
-			channel = session.openChannel("sftp");
-			channel.connect();
-			ChannelSftp sftp = (ChannelSftp) channel;
-			sftp.cd(pathDir);
-
-			sftp.get("/ECEP/song.nguyen/DW_2020/data/sinhvien_chieu_nhom6.xlsx", pathDir);
-			Boolean success = true;
-			if (success) {
-				// The file has been succesfully downloaded
-			}
-
-			channel.disconnect();
-			session.disconnect();
-		} catch (JSchException e) {
-			System.out.println(e.getMessage().toString());
-			e.printStackTrace();
-		} catch (SftpException e) {
-			System.out.println(e.getMessage().toString());
-			e.printStackTrace();
+			System.loadLibrary("chilkat");
+		} catch (UnsatisfiedLinkError e) {
+			System.err.println("Native code library failed to load.\n" + e);
+			System.exit(1);
 		}
-
-		// session.setPassword(password);
-		// session.connect();
-		// channel = session.openChannel("sftp");
-		// channel.connect();
-		// ChannelSftp sftp = (ChannelSftp) channel;
-		// sftp.get(pathDir, "specify path to where you want the files to be output");
-		// } catch (JSchException e) {
-		// System.out.println(userName);
-		// System.out.println(password);
-		// e.printStackTrace();
-		//
-		// } catch (SftpException e) {
-		// System.out.println(userName);
-		// e.printStackTrace();
-		// } finally {
-		// if (channel != null) {
-		// ((ChannelSftp) channel).disconnect();
-		// }
-		// if (session != null) {
-		// session.disconnect();
-		// }
-		// }
-
 	}
 
-	public static void main(String[] args) {
-		DownloadFile download = new DownloadFile();
+	public static void main(String argv[]) {
+		CkSsh ssh = new CkSsh();
+
 		String hostname = "drive.ecepvn.org";
 		int port = 2227;
-		String userName = "guest_access";
-		String password = "123456";
-		String pathDir = "F:\\HK6-2020\\DataWareHouse_ThaySong\\FileNopBai\\sinhvien_chieu_nhom6.xlsx";
-		download.downloadFtp(userName, password, hostname, port, pathDir);
+		// Kết nối tới SSH server:
+		boolean success = ssh.Connect(hostname, port);
+		if (success != true) {
+			System.out.println(ssh.lastErrorText());
+			return;
+		}
+		// Đợi tối đa 5s khi đọc phản hồi
+		ssh.put_IdleTimeoutMs(5000);
+		success = ssh.AuthenticatePw("guest_access", "123456");
+		if (success != true) {
+			System.out.println(ssh.lastErrorText());
+			return;
+		}
+
+		CkScp scp = new CkScp();
+		success = scp.UseSsh(ssh);
+		if (success != true) {
+			System.out.println(scp.lastErrorText());
+			return;
+		}
+		scp.put_SyncMustMatch("sinhvien");// down tất cả các file bắt đầu bằng sinhvien
+		String remotePath = "/volume1/ECEP/song.nguyen/DW_2020/data";
+		String localPath = "C:\\Users\\Thuy Hang\\Downloads\\FileNopBai";
+
+		success = scp.SyncTreeDownload(remotePath, localPath, port, false);
+		if (success != true) {
+			System.out.println(scp.lastErrorText());
+			return;
+		}
+		System.out.println("SCP download file success.");
+		ssh.Disconnect();
 	}
 }
