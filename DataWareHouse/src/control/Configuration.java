@@ -1,6 +1,6 @@
 package control;
 
-public class Config {
+public class Configuration {
 	/* Id của Configuration */
 	private int idConf;
 	/* Thư mục chứa File trên FTP */
