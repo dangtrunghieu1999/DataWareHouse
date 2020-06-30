@@ -14,6 +14,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
@@ -232,9 +233,7 @@ public class LoadData {
 		InputStreamReader isr = null;
 		BufferedReader bReader = null;
 		
-		int START_LINE = 1;
-		int counter = START_LINE;
-		int start = 1;
+		int i = 0;
 		
 		String query = convertQuery(field);
 		
@@ -249,35 +248,40 @@ public class LoadData {
 			isr = new InputStreamReader(fis);
 			bReader = new BufferedReader(isr);
 			
+			String lineText = null;
+			StringTokenizer st;
+			
 			PreparedStatement statement = connection.prepareStatement(query);
 			
-			String line = null;
-			String arrayData[] = null;
-			
-			while (true) {
-				line = bReader.readLine();
-				if (line == null) {
-					break;
-				} else {
-					if (counter > START_LINE) {
-						arrayData = line.split(delimited);
-						statement.setString(1, arrayData[0]);
-						for (int i = 1; i < arrayData.length + 1; i++) {
-							if (arrayData[i].equals("")) {
-								statement.setString(i+1, "null");
-							}else {
-								statement.setString(i+1, arrayData[i]);
-							}
-						}
-						statement.executeUpdate();
+			if (ignore == 0) {
+				
+				while ((lineText = bReader.readLine()) != null) {
+					st = new StringTokenizer(lineText, delimited);
+					i = 0;
+					while (st.hasMoreElements()) {
+						statement.setString(++i, st.nextToken());
 					}
-					counter++;
-					
-
+					statement.execute();
 				}
-				connection.commit();
-
+				
+			}else {
+				
+				lineText = bReader.readLine();
+				st = new StringTokenizer(lineText, delimited);
+				
+				while ((lineText = bReader.readLine()) != null) {
+					st = new StringTokenizer(lineText, delimited);
+					i = 0;
+					while (st.hasMoreElements()) {
+						statement.setString(++i, st.nextToken());
+					}
+					statement.execute();
+				}
 			}
+			
+
+
+			
 			System.out.println("Insert success record");
 			updateLogs(file_name);
 		} catch (SQLException e) {
