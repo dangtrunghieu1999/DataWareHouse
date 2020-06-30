@@ -1,5 +1,6 @@
 package Hang;
-
+//username trong mySQL:root
+//MK:1234
 import com.chilkatsoft.*;
 
 public class DownloadFile {
