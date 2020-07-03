@@ -1,6 +1,6 @@
 package control;
 
-public class Config {
+public class Configuration {
 	/* Id của Configuration */
 	private int idConf;
 	/* Thư mục chứa File trên FTP */
@@ -21,9 +21,9 @@ public class Config {
 	private String propsStagingForWareHouse;
 	/* Các trường trong WAREHOUSE */
 	private String propsWarehouse;
-	/* Delimiter của nguồn dữ liệu ở đây là CSV/Xlxs */
+	/* Delimiter của nguồn dữ liệu ở đây là CSV,Xlxs */
 	private String feedDelimiter;
-	/* Tên nguồn dữ liệu Ví dụ: Chieu_Nhom06 */
+	/* Tên nguồn dữ liệu Ví dụ: Chieu_nhom06 */
 	private String srcFeed;
 	/* Tên table STAGING */
 	private String tableStaging;
