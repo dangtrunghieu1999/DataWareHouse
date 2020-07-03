@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import constants.Constant;
-import control.Config;
+import control.Configuration;
 
 import log.Log;
 
@@ -46,16 +46,16 @@ public class MySQLConnection extends Constant {
 		}
 	}
 
-	public List<Config> loadAllConfs() throws SQLException {
+	public List<Configuration> loadAllConfs() throws SQLException {
 
-		List<Config> outputs = new ArrayList<Config>();
+		List<Configuration> outputs = new ArrayList<Configuration>();
 		Connection conn = getConn(URL_CONTROL);
 		String sqlSelectAllConf = "SELECT * FROM data_file_configuration WHERE IS_ACTIVE<>0";
 		PreparedStatement ps = conn.prepareStatement(sqlSelectAllConf);
 		ResultSet rs = ps.executeQuery();
 		
 		while (rs.next()) {
-			Config conf = new Config();
+			Configuration conf = new Configuration();
 			conf.setIdConf(rs.getInt("ID"));
 			conf.setRemoteDir(rs.getString("REMOTE_DIR"));
 			conf.setLocalDir(rs.getString("LOCAL_DIR"));
