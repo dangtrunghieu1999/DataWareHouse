@@ -98,12 +98,12 @@ public class LoadStagingToWareHouse extends Constant {
 	
 	public static void main(String[] args) throws SQLException {
 		MySQLConnection mySQLConn = new MySQLConnection();
-		List<Config> lstConf = mySQLConn.loadAllConfs();
+		List<Configuration> lstConf = mySQLConn.loadAllConfs();
 		String fileToStaging = Action.FILE_TO_STAGING.name().toLowerCase();
 		String success = Result.SUCCESS.name().toLowerCase();
 
 		System.out.println("LOAD DATA FROM STAGING TO WAREHOUSE\n");
-		for (Config conf : lstConf) {
+		for (Configuration conf : lstConf) {
 			String sqlLoadSTToWH = "SELECT * FROM data_file_log WHERE ID_CONF=" + conf.getIdConf()
 			+ " AND ACTION_TYPE='" + fileToStaging + "' AND LOG_STATUS='" + success + "'";
 			List<Log> lstLog = mySQLConn.getAllLogByCondition(sqlLoadSTToWH);
