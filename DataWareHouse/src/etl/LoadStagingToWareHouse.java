@@ -10,11 +10,11 @@ import connection.MySQLConnection;
 import constants.Action;
 import constants.Constant;
 import constants.Result;
-import control.Config;
+import control.Configuration;
 import log.Log;
 
 public class LoadStagingToWareHouse extends Constant {
-	public static void load(Config conf, Log log) throws SQLException {
+	public static void load(Configuration conf, Log log) throws SQLException {
 
 		System.out.println("Start load data from " + conf.getSrcFeed());
 		long start = System.currentTimeMillis();

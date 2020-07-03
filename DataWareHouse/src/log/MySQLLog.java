@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import connections.MySQLConnection;
+import connection.MySQLConnection;
 import constants.Action;
 import constants.Constant;
 import constants.Result;
