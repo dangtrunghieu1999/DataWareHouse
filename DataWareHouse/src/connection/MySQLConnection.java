@@ -7,14 +7,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
 import constants.Constant;
 import control.Config;
-import control.Configuration;
+
 import log.Log;
 
 public class MySQLConnection extends Constant {
-	
+
 	public Connection getConn(String url) {
 		Connection conn = null;
 		try {
@@ -25,7 +24,7 @@ public class MySQLConnection extends Constant {
 		}
 		return conn;
 	}
-
+	
 	public Connection getClientConn(String url, String user, String pass) {
 		Connection conn = null;
 		try {
@@ -46,6 +45,7 @@ public class MySQLConnection extends Constant {
 			}
 		}
 	}
+
 	public List<Config> loadAllConfs() throws SQLException {
 
 		List<Config> outputs = new ArrayList<Config>();
@@ -61,28 +61,38 @@ public class MySQLConnection extends Constant {
 			conf.setLocalDir(rs.getString("LOCAL_DIR"));
 			conf.setHostName(rs.getString("HOST_NAME"));
 			conf.setPort(rs.getInt("PORT"));
-			conf.setUserHost(rs.getString("USER_NAME"));
+			conf.setUserHost(rs.getString("USER_HOST"));
 			conf.setUserPass(rs.getString("USER_PASS"));
+			conf.setColumsHostFeed(rs.getString("COLUMNS_HOST_FEED"));
 			conf.setPropsStagingForWareHouse(rs.getString("PROPS_STAGING_FOR_WAREHOUSE"));
 			conf.setPropsWarehouse(rs.getString("PROPS_WAREHOUSE"));
 			conf.setFeedDelimiter(rs.getString("FEED_DELIM"));
 			conf.setSrcFeed(rs.getString("SRC_FEED"));
 			conf.setTableStaging(rs.getString("TABLE_STAGING"));
-			
+			conf.setDateFormat(rs.getString("DATE_FORMAT"));
+			conf.setDateFormat(rs.getString("DATE_FORMAT"));
 			outputs.add(conf);
 		}
 		close(conn);
 		return outputs;
 	}
 
-	public static void main(String[] args) {
-//		MySQLConnection sql = new MySQLConnection();
-//		Connection c = sql.getConn(URL_STAGING);
-//		if(sql !=null){
-//			System.out.println("success");
-//		}else{
-//			System.out.println("failer");
-//		}
-		 System.out.println(new MySQLConnection().getConn(URL_CONTROL));
+	public List<Log> getAllLogByCondition(String sqlQuery) throws SQLException{
+		List<Log> lstLogs = new ArrayList<Log>();
+		Connection conn = getConn(URL_CONTROL);
+		PreparedStatement ps = conn.prepareStatement(sqlQuery);
+		ResultSet rs = ps.executeQuery();
+		while(rs.next()){
+			Log log  = new Log();
+			log.setId(rs.getInt("ID"));
+			log.setIdConfig(rs.getInt("ID_CONF"));
+			log.setActionType(rs.getString("ACTION_TYPE"));
+			log.setSourceFeed(rs.getString("SOURCE_FEED"));
+			log.setLogStatus(rs.getString("LOG_STATUS"));
+			log.setFeedName(rs.getString("FEED_NAME"));
+			lstLogs.add(log);
+		}
+		close(conn);
+		return lstLogs;
 	}
 }
