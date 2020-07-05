@@ -1,8 +1,12 @@
 package etl;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -35,7 +39,7 @@ public class LoadData {
 		System.out.println("connect success");
 		try {
 			Statement st = connection.createStatement();
-			ResultSet rs = st.executeQuery("select * from logs join config on config.id = logs.id");
+			ResultSet rs = st.executeQuery("select * from logs join config on config.id = logs.id where status = 'ER' limit 1");
 			String file_name, status, src_type, delimited,source, des,user_des,pw_des,field,table_name;
 			int id, ignore;
 
@@ -92,16 +96,15 @@ public class LoadData {
 		return query;
 	}
 	
-	public void updateLogs(String file_name) {
+	public void changeStatusFile(String file_name) {
 		Date endDate = new Date();
-		
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(Main.JDBC_CONNECTION_URL, Main.username,
 					Main.password);
 			  String query = "update logs set status = ?, time_upload = ? where file_name = ?";
 		      PreparedStatement preparedStmt = connection.prepareStatement(query);
-		      preparedStmt.setString(1,"TER");
+		      preparedStmt.setString(1,"TR");
 		      preparedStmt.setTimestamp(2, new java.sql.Timestamp(endDate.getTime()));
 		      preparedStmt.setString(3, file_name);
 
@@ -110,6 +113,30 @@ public class LoadData {
 		      connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
+			System.out.println("Change status error");
+		}
+	}
+	
+	public void moveFileToError(String file) {
+		File f = new File(file);
+		String newPath = f.getParent() + File.separator + "Error" + File.separator + f.getName();
+		try {
+			Files.move(Paths.get(file), Paths.get(newPath), StandardCopyOption.REPLACE_EXISTING);
+			System.out.println("Move file " + f.getName() + " to folder error \r\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Move file thanh bai");
+		}
+	}
+	
+	public void moveFileToSuccess(String file) {
+		File f = new File(file);
+		String newPath = f.getParent() + File.separator + "Successfully" + File.separator + f.getName(); // path folder
+		try {
+			Files.move(Paths.get(file), Paths.get(newPath), StandardCopyOption.REPLACE_EXISTING);
+			System.out.println("Move file " + f.getName() + "  to folder successfully \r\n");
+		} catch (IOException e) {
+			System.out.println("Move file thanh bai");
 		}
 	}
 	
@@ -202,7 +229,7 @@ public class LoadData {
 			long end = System.currentTimeMillis();
 			System.out.printf("Import done in %d ms\n", (end - start));
 			
-			updateLogs(file_name);
+			changeStatusFile(file_name);
 			
 			
 		} catch (SQLException e) {
@@ -221,8 +248,44 @@ public class LoadData {
 								String source, String des, String user_des,
 								String pw_des, String delimited,
 								String field,String table_name,int ignore) {
-
+		String filePath = filePath(source, file_name);
+		String loadQuery = "LOAD DATA INFILE '" + filePath + "' INTO TABLE data FIELDS TERMINATED BY '\\"
+				+ delimited + "' LINES TERMINATED BY '\n' IGNORE " + ignore + " LINES";
+		System.out.println(loadQuery);
+		PreparedStatement statement;
+		Connection connection = null;
+		boolean check = false;
 		
-	
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			connection = DriverManager.getConnection(des, user_des, pw_des);
+			connection.setAutoCommit(false);
+			long start = System.currentTimeMillis();
+			
+			statement = connection.prepareStatement(loadQuery);
+			statement.executeUpdate();
+			statement.close();
+			connection.commit();
+			
+			long end = System.currentTimeMillis();
+			System.out.printf("Import done in %d ms\n", (end - start));
+			changeStatusFile(file_name);
+			check = true;
+			
+			if (check) {
+				changeStatusFile(file_name);
+				moveFileToSuccess(filePath);
+			} else {
+				// moveFileToError(path);
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println(" loadToStaging that bai ");
+			moveFileToError(filePath);
+		}
 	}
 }
