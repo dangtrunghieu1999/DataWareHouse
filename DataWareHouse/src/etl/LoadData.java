@@ -1,10 +1,8 @@
 package etl;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -14,7 +12,6 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
@@ -225,87 +222,7 @@ public class LoadData {
 								String pw_des, String delimited,
 								String field,String table_name,int ignore) {
 
-		String filePath = filePath(source, file_name);
 		
-		Connection connection = null;
-
-		FileInputStream fis = null;
-		InputStreamReader isr = null;
-		BufferedReader bReader = null;
-		
-		int i = 0;
-		
-		String query = convertQuery(field);
-		
-		System.out.println(query);
-		try {
-			
-			Class.forName("com.mysql.jdbc.Driver");
-			connection = DriverManager.getConnection(des, user_des, pw_des);
-			connection.setAutoCommit(false);
-			
-			fis = new FileInputStream(filePath);
-			isr = new InputStreamReader(fis);
-			bReader = new BufferedReader(isr);
-			
-			String lineText = null;
-			StringTokenizer st;
-			
-			PreparedStatement statement = connection.prepareStatement(query);
-			
-			if (ignore == 0) {
-				
-				while ((lineText = bReader.readLine()) != null) {
-					st = new StringTokenizer(lineText, delimited);
-					i = 0;
-					while (st.hasMoreElements()) {
-						statement.setString(++i, st.nextToken());
-					}
-					statement.execute();
-				}
-				
-			}else {
-				
-				lineText = bReader.readLine();
-				st = new StringTokenizer(lineText, delimited);
-				
-				while ((lineText = bReader.readLine()) != null) {
-					st = new StringTokenizer(lineText, delimited);
-					i = 0;
-					while (st.hasMoreElements()) {
-						statement.setString(++i, st.nextToken());
-					}
-					statement.execute();
-				}
-			}
-			
-
-
-			
-			System.out.println("Insert success record");
-			updateLogs(file_name);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-
-			try {
-				bReader.close();
-				isr.close();
-				fis.close();
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 	
-		
 	}
-	
-		
 }
