@@ -1,12 +1,8 @@
 package etl;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -17,7 +13,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -26,9 +22,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class LoadData {
 	
-	private static final String SQL_INSERT = "INSERT INTO ${table} VALUES (${values})";
-	private static final String TABLE_REGEX = "\\$\\{table\\}";
-	private static final String VALUES_REGEX = "\\$\\{values\\}";
+	public static final String SQL_INSERT = "INSERT INTO ${table} VALUES (${values})";
+	public static final String TABLE_REGEX = "\\$\\{table\\}";
+	public static final String VALUES_REGEX = "\\$\\{values\\}";
 	private Connection connection;
 
 	public LoadData(Connection connection) {
@@ -39,7 +35,7 @@ public class LoadData {
 		System.out.println("connect success");
 		try {
 			Statement st = connection.createStatement();
-			ResultSet rs = st.executeQuery("select * from logs join config on config.id = logs.id where status = 'ER' limit 1");
+			ResultSet rs = st.executeQuery("select * from logs join config on config.id = logs.id");
 			String file_name, status, src_type, delimited,source, des,user_des,pw_des,field,table_name;
 			int id, ignore;
 
@@ -62,7 +58,7 @@ public class LoadData {
 							user_des, pw_des, delimited, field, table_name);
 				}
 				if (src_type.equals("csv") || src_type.equals("txt")) {
-					loadFromCSVOrTXT(id, status, file_name, source, des, 
+					loadFromCSVOrTXTInfile(id, status, file_name, source, des, 
 							user_des, pw_des, delimited, field,table_name,ignore);
 				}
 			}
@@ -74,39 +70,18 @@ public class LoadData {
 
 	}
 	
-	public String filePath(String source, String file_name) {
-		StringBuffer sourceFile = new StringBuffer(source);
-		sourceFile.append("/");
-		sourceFile.append(file_name);
-		String filePath = sourceFile.toString();
-		return filePath;
-		
-	}
-	
-	public String convertQuery(String field) {
-		String [] headerRow = field.split(",");
-		
-		String questionmarks = StringUtils.repeat("?,", headerRow.length);
-		
-		questionmarks = (String) questionmarks.subSequence(0, questionmarks
-				.length() - 1);
-		String query = SQL_INSERT.replaceFirst(TABLE_REGEX, "Student");
-		
-		query = query.replaceFirst(VALUES_REGEX, questionmarks);
-		return query;
-	}
-	
-	public void changeStatusFile(String file_name) {
+	public void changeStatusFile(String file_name, int numberRows) {
 		Date endDate = new Date();
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(Main.JDBC_CONNECTION_URL, Main.username,
 					Main.password);
-			  String query = "update logs set status = ?, time_upload = ? where file_name = ?";
+			  String query = "update logs set status = ?, time_load_staging = ?, number_row =? where file_name = ?";
 		      PreparedStatement preparedStmt = connection.prepareStatement(query);
 		      preparedStmt.setString(1,"TR");
 		      preparedStmt.setTimestamp(2, new java.sql.Timestamp(endDate.getTime()));
-		      preparedStmt.setString(3, file_name);
+		      preparedStmt.setInt(3, numberRows);
+		      preparedStmt.setString(4, file_name);
 
 		      preparedStmt.executeUpdate();
 		      System.out.println("success update logs" + file_name);
@@ -117,36 +92,15 @@ public class LoadData {
 		}
 	}
 	
-	public void moveFileToError(String file) {
-		File f = new File(file);
-		String newPath = f.getParent() + File.separator + "Error" + File.separator + f.getName();
-		try {
-			Files.move(Paths.get(file), Paths.get(newPath), StandardCopyOption.REPLACE_EXISTING);
-			System.out.println("Move file " + f.getName() + " to folder error \r\n");
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("Move file thanh bai");
-		}
-	}
-	
-	public void moveFileToSuccess(String file) {
-		File f = new File(file);
-		String newPath = f.getParent() + File.separator + "Successfully" + File.separator + f.getName(); // path folder
-		try {
-			Files.move(Paths.get(file), Paths.get(newPath), StandardCopyOption.REPLACE_EXISTING);
-			System.out.println("Move file " + f.getName() + "  to folder successfully \r\n");
-		} catch (IOException e) {
-			System.out.println("Move file thanh bai");
-		}
-	}
-	
+	@SuppressWarnings("deprecation")
 	public void loadFromXLSX(int id, String status ,String file_name,
 							String source, String des, String user_des,
 							String pw_des, String delimited, String field, String table_name) {
-		String filePath = filePath(source, file_name);
+		String filePath = Support.filePath(source, file_name);
 		
 		Connection connection = null;
 		int batchSize = 20;
+		int countRows = 0;
 		
 		try {
 			
@@ -161,7 +115,7 @@ public class LoadData {
 			Sheet firstSheet = workbook.getSheetAt(0);
 			Iterator<Row> rowIterator = firstSheet.iterator();
 
-			String query = convertQuery(field);
+			String query = Support.convertQuery(field);
 			System.out.println(query);
 			PreparedStatement statement = connection.prepareStatement(query);
 			
@@ -169,15 +123,13 @@ public class LoadData {
 			int counterSecond = 2;
 			rowIterator.next();
 			
-
 			while (rowIterator.hasNext()) {
 				Row nextRow = rowIterator.next();
 				Iterator<Cell> cellIterator = nextRow.cellIterator();
 
 				while (cellIterator.hasNext()) {
 					Cell nextCell = cellIterator.next();
-					
-					
+
 					int columnIndex = nextCell.getColumnIndex();
 
 					switch (columnIndex) {
@@ -188,8 +140,14 @@ public class LoadData {
 					default:
 						switch (nextCell.getCellType()) {
 						case NUMERIC:
-							Double valueDouble = (Double) nextCell.getNumericCellValue();
-							statement.setDouble(counterSecond, valueDouble);
+							if (HSSFDateUtil.isCellDateFormatted(nextCell)) {
+								Date valueDate = nextCell.getDateCellValue();
+								statement.setTimestamp(counterSecond, new Timestamp(valueDate.getTime()));
+								break;
+							} else {
+								Double valueDouble = (Double) nextCell.getNumericCellValue();
+								statement.setDouble(counterSecond, valueDouble);
+							}
 							break;
 						case STRING:
 							String valueString = nextCell.getStringCellValue();
@@ -198,15 +156,11 @@ public class LoadData {
 						case BLANK:
 							statement.setString(counterSecond, "null");
 							break;
-						case _NONE:
-							Date valueDate = nextCell.getDateCellValue();
-							statement.setTimestamp(counterSecond, new Timestamp(valueDate.getTime()));
-							break;
 						default:
 							break;
 						}
-						
-						counterSecond ++;
+
+						counterSecond++;
 						break;
 					}
 				}
@@ -223,14 +177,12 @@ public class LoadData {
 
 			// execute the remaining queries
 			statement.executeBatch();
-
+			
 			connection.commit();
 
 			long end = System.currentTimeMillis();
 			System.out.printf("Import done in %d ms\n", (end - start));
-			
-			changeStatusFile(file_name);
-			
+			changeStatusFile(file_name, countRows);
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -240,15 +192,18 @@ public class LoadData {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+		}catch (Exception e) {
+			System.out.println(" loadToStaging that bai ");
+			MoveFileStatus.moveFileToError(filePath);
 		}
 		
 	}
 	
-	public void loadFromCSVOrTXT(int id, String status ,String file_name,
+	public void loadFromCSVOrTXTInfile(int id, String status ,String file_name,
 								String source, String des, String user_des,
 								String pw_des, String delimited,
 								String field,String table_name,int ignore) {
-		String filePath = filePath(source, file_name);
+		String filePath = Support.filePath(source, file_name);
 		String loadQuery = "LOAD DATA INFILE '" + filePath + "' INTO TABLE data FIELDS TERMINATED BY '\\"
 				+ delimited + "' LINES TERMINATED BY '\n' IGNORE " + ignore + " LINES";
 		System.out.println(loadQuery);
@@ -269,12 +224,12 @@ public class LoadData {
 			
 			long end = System.currentTimeMillis();
 			System.out.printf("Import done in %d ms\n", (end - start));
-			changeStatusFile(file_name);
+//			changeStatusFile(file_name);
 			check = true;
 			
 			if (check) {
-				changeStatusFile(file_name);
-				moveFileToSuccess(filePath);
+//				changeStatusFile(file_name);
+				MoveFileStatus.moveFileToSuccess(filePath);
 			} else {
 				// moveFileToError(path);
 			}
@@ -285,7 +240,10 @@ public class LoadData {
 			e.printStackTrace();
 		} catch (Exception e) {
 			System.out.println(" loadToStaging that bai ");
-			moveFileToError(filePath);
+			MoveFileStatus.moveFileToError(filePath);
 		}
 	}
+
+	
+	
 }
