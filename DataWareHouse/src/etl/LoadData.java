@@ -1,10 +1,7 @@
 package etl;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -14,9 +11,6 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
-import java.util.regex.Pattern;
 
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.Cell;
@@ -25,10 +19,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-@SuppressWarnings("deprecation")
 public class LoadData {
 	
-	private String NUMBER_REGEX = "1";
 	private Connection connection;
 	public int countRows = 0;
 
@@ -193,82 +185,30 @@ public class LoadData {
 		
 	}
 	
-	private String readLines(String value, String delimited) {
-		String values = "";
-		StringTokenizer stoken = new StringTokenizer(value, delimited);
-		int countToken = stoken.countTokens();
-		String lines = "(";
-		String token = "";
-		for (int j = 0; j < countToken; j++) {
-			token = stoken.nextToken();
-			lines += (j == countToken - 1) ? '"' + token.trim() + '"' + ")," : '"' + token.trim() + '"' + ",";
-			values += lines;
-			lines = "";
-		}
-		return values;
-	}
-	
-	public String readValuesTXT(File s_file, int id_log, int count_field, String delimited) {
-		if (!s_file.exists()) {
-			return null;
-		}
-		String values = "";
-		
-		try {
-			BufferedReader bReader = new BufferedReader(new InputStreamReader(new FileInputStream(s_file)));
-			
-			String line = bReader.readLine();
-		
-			if (new StringTokenizer(line, delimited).countTokens() != count_field) {
-				bReader.close();
-				return null;
-			}
-			if (Pattern.matches(NUMBER_REGEX , line.split(delimited)[0])) {
-				values += readLines(line, delimited);
-			}
-			
-			while ((line = bReader.readLine()) != null) {
-
-				values += readLines(line + " ", delimited);
-				this.countRows++;
-			}
-			bReader.close();
-			return values.substring(0, values.length() - 1);
-
-		} catch (NoSuchElementException | IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
 	public void loadFromCSVOrTXT(int id, String status, String file_name, String source, String des, String user_des,
-			String pw_des, String delimited, String field, String table_name, int count_field) {
-		
+			String pw_des, String delimited, String field, String table_name, int count_field) throws SQLException {
+
 		String filePath = Support.filePath(source, file_name);
 		File file = new File(filePath);
-		
-		String values = readValuesTXT(file, id, count_field,delimited);
-
 		Connection connection = null;
-		
-		String query = "INSERT INTO " + table_name + " VALUES" + " " + values;
-		System.out.println(this.countRows);
+
+		String loadQuery = "LOAD DATA INFILE '" + file + "' INTO TABLE data FIELDS TERMINATED BY '\\" + delimited
+				+ "' LINES TERMINATED BY '\n' IGNORE " + 1 + " LINES";
+		System.out.println(loadQuery);
+		PreparedStatement state;
 		try {
-			long start = System.currentTimeMillis();
 			connection = DriverManager.getConnection(des, user_des, pw_des);
 			connection.setAutoCommit(false);
-
-			PreparedStatement statement = connection.prepareStatement(query);
-			statement.execute();
+			state = connection.prepareStatement(loadQuery);
+			state.executeUpdate();
+			state.close();
 			connection.commit();
-			connection.close();
-			long end = System.currentTimeMillis();
-			System.out.printf("Import done in %d ms\n", (end - start));
-
-			this.countRows = 0;
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
+			connection.rollback();
 		}
+
 	}
 	
 }
