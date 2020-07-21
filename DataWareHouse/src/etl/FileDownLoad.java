@@ -4,7 +4,7 @@ import com.chilkatsoft.CkGlobal;
 import com.chilkatsoft.CkScp;
 import com.chilkatsoft.CkSsh;
 
-public class DownLoadFile {
+public class FileDownLoad {
 	static {
 		try {
 			System.loadLibrary("chilkat");
@@ -13,7 +13,8 @@ public class DownLoadFile {
 			System.exit(1);
 		}
 	}
-	public static void fileDownload(String hostname, int port, String user_name, String password, String remote_Path,
+
+	public static void DownloadFile(String hostname, int port, String user_name, String password, String remote_Path,
 			String local_Path, String regex_Match) {
 		CkSsh ssh = new CkSsh();
 		CkGlobal ck = new CkGlobal();
@@ -47,8 +48,8 @@ public class DownLoadFile {
 	}
 
 	public static void main(String[] args) {
-	DownLoadFile.fileDownload("drive.ecepvn.org", 2227, "guest_access", "123456",
-				"/volume1/ECEP/song.nguyen/DW_2020/data", "F:\\HK6-2020\\DataWareHouse_ThaySong\\DownLoadFile",
+		FileDownLoad.DownloadFile("drive.ecepvn.org", 2227, "guest_access", "123456",
+				"/volume1/ECEP/song.nguyen/DW_2020/data", "F:\\HK6-2020\\DataWareHouse_ThaySong\\SCP_DownLoad",
 				"sinhvien_chieu*.xlsx");
 	}
 }
