@@ -8,11 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -21,7 +19,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import connection.DBConnection;
 
-@SuppressWarnings("deprecation")
 public class LoadData {
 	
 	public int countRows = 0;
@@ -91,75 +88,45 @@ public class LoadData {
 							String source, String des, String user_des,
 							String pw_des, String delimited, String field, String table_name) {
 		String filePath = Support.filePath(source, file_name);
-		Connection connection = null;
-		int batchSize = 20;
 		int countRows = 0;
 		int checkRows = 0;
-		
+		Row row;
 		try {
-			connection = DriverManager.getConnection(des, user_des, pw_des);
-			connection.setAutoCommit(false);
+			Connection connection = DBConnection.getConnection("STAGING");
 			long start = System.currentTimeMillis();
 
 			FileInputStream inputStream = new FileInputStream(filePath);
 			Workbook workbook = new XSSFWorkbook(inputStream);
-
 			Sheet firstSheet = workbook.getSheetAt(0);
+			
 			Iterator<Row> rowIterator = firstSheet.iterator();
 
 			String query = Support.convertQuery(field, table_name);
 			
 			PreparedStatement statement = connection.prepareStatement(query);
 			
-			int count = 0;
-			int counterSecond = 2;
 			rowIterator.next();
 			
 			while (rowIterator.hasNext()) {
+				checkRows++;
 				Row nextRow = rowIterator.next();
 				Iterator<Cell> cellIterator = nextRow.cellIterator();
 				checkRows++;
 				while (cellIterator.hasNext()) {
-					
-					Cell nextCell = cellIterator.next();
-					int columnIndex = nextCell.getColumnIndex();
-					
-					switch (columnIndex) {
-					case 0:
-						int stt = (int) nextCell.getNumericCellValue();
-						statement.setInt(1, stt);
-						break;
-					default:
-						switch (nextCell.getCellType()) {
-						case NUMERIC:
-							if (HSSFDateUtil.isCellDateFormatted(nextCell)) {
-								Date valueDate = nextCell.getDateCellValue();
-								statement.setTimestamp(counterSecond, new Timestamp(valueDate.getTime()));
-								break;
-							} else {
-								Double valueDouble = (Double) nextCell.getNumericCellValue();
-								statement.setDouble(counterSecond, valueDouble);
-							}
-							break;
-						case STRING:
-							String valueString = nextCell.getStringCellValue();
-							statement.setString(counterSecond, valueString);
-							break;
-						case BLANK:
-							statement.setString(counterSecond, "null");
-							break;
-						default:
-							break;
+					Cell cell = cellIterator.next();
+					row = cell.getRow();
+					for (int j = 0; j < 11; j++) {
+						cell = row.getCell(j);
+						try {
+							System.out.println(cell.getStringCellValue());
+							statement.setString(j + 1, cell.getStringCellValue());
+						} catch (IllegalStateException e) {
+							statement.setString(j + 1, String.valueOf((int) cell.getNumericCellValue()));
+						} catch (NullPointerException e) {
+							statement.setString(j + 1, "");
 						}
-						counterSecond++;
-						break;
 					}
-				}
-				counterSecond = 2;
-				statement.addBatch();
-				
-				if (count % batchSize == 0) {
-					statement.executeBatch();
+					statement.execute();
 					countRows++;
 				}
 			}
