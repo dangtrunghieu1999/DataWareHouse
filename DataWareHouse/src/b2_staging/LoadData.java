@@ -1,4 +1,4 @@
-package etl;
+package b2_staging;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,19 +19,17 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import connection.DBConnection;
+
+@SuppressWarnings("deprecation")
 public class LoadData {
 	
-	private Connection connection;
 	public int countRows = 0;
-
-	public LoadData(Connection connection) {
-		this.connection = connection;
-	}
-
 	public void loadFromSourceFile() {
 		System.out.println("connect success");
 		try {
-			Statement st = connection.createStatement();
+			Connection connectDB = DBConnection.getConnection("CONTROLDB");
+			Statement st = connectDB.createStatement();
 			ResultSet rs = st.executeQuery("select * from logs join config on config.id = logs.id");
 			String file_name, status, src_type, delimited,source, des,user_des,pw_des,field,table_name;
 			int id, count_field;
@@ -72,8 +70,7 @@ public class LoadData {
 		Date endDate = new Date();
 		Connection connection = null;
 		try {
-			connection = DriverManager.getConnection(Main.JDBC_CONNECTION_URL, Main.username,
-					Main.password);
+			connection = DBConnection.getConnection("CONTROLDB");
 			  String query = "update logs set status = ?, time_load_staging = ?, number_row =? where file_name = ?";
 		      PreparedStatement preparedStmt = connection.prepareStatement(query);
 		      preparedStmt.setString(1,"TR");

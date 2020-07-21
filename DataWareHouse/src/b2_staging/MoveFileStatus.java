@@ -1,4 +1,4 @@
-package etl;
+package b2_staging;
 
 import java.io.File;
 import java.io.IOException;
