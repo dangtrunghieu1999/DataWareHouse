@@ -50,6 +50,6 @@ public class FileDownLoad {
 	public static void main(String[] args) {
 		FileDownLoad.DownloadFile("drive.ecepvn.org", 2227, "guest_access", "123456",
 				"/volume1/ECEP/song.nguyen/DW_2020/data", "F:\\HK6-2020\\DataWareHouse_ThaySong\\SCP_DownLoad",
-				"sinhvien_chieu*.xlsx");
+				"sinhvien*.*.xlsx");
 	}
 }
