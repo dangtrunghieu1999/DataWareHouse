@@ -1,4 +1,4 @@
-package etl;
+package b1_donwload;
 
 import com.chilkatsoft.CkGlobal;
 import com.chilkatsoft.CkScp;
