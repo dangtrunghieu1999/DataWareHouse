@@ -80,11 +80,27 @@ public class LoadData {
 		
 		Connection connection;
 		try {
+			long start = System.currentTimeMillis();
 			connection = DBConnection.getConnection("Staging");
 			connection.setAutoCommit(false);
 			PreparedStatement statement = connection.prepareStatement(query);
 			statement.execute();
 			connection.commit();
+			
+			String queryCount = "Select count(*) from " + table_name;
+			Statement st = connection.createStatement();
+			ResultSet rs = st.executeQuery(queryCount);
+			rs.next();
+		    int count = rs.getInt(1);
+		    
+			int row = Support.getRow();
+			
+		    if (count == row) {
+		    	changeStatusFile(file_name, count);
+				MoveFileStatus.moveFileToSuccess(filePath);
+			}
+			long end = System.currentTimeMillis();
+			System.out.printf("Import done in %d ms\n", (end - start));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

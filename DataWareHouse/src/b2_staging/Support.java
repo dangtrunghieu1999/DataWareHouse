@@ -22,7 +22,7 @@ public class Support {
 	static final String NUMBER_REGEX = "^[0-9]+$";
 	static final String ACTIVE_DATE = "31-12-2013";
 	static final String DATE_FORMAT = "yyyy-MM-dd";
-	
+	public static int row = 0;
 	static public String filePath(String source, String file_name) {
 		StringBuffer sourceFile = new StringBuffer(source);
 		sourceFile.append("/");
@@ -82,6 +82,7 @@ public class Support {
 		String values = "";
 		String value = "";
 		String delim = "|";
+		int countRow = 0;
 		try {
 			FileInputStream fileIn = new FileInputStream(file);
 			XSSFWorkbook workBook = new XSSFWorkbook(fileIn);
@@ -92,8 +93,8 @@ public class Support {
 				rows = sheet.iterator();
 			}
 			while (rows.hasNext()) {
+				countRow++;
 				Row row = rows.next();
-
 				for (int i = 0; i < column; i++) {
 //					if (i == column - 1) {
 //						value += ACTIVE_DATE;
@@ -137,6 +138,8 @@ public class Support {
 				values += readLines(value, delim);
 				value = "";
 			}
+			setRow(countRow);
+			countRow = 0;
 			workBook.close();
 			fileIn.close();
 			return values.substring(0, values.length() - 1);
@@ -145,5 +148,13 @@ public class Support {
 		}
 	}
 	
-
+	public static void setRow(int countRow) {
+		row = countRow;
+	}
+	
+	public static int getRow() {
+		return row;
+	}
+	
+	
 }
