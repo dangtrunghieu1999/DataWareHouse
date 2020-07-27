@@ -14,42 +14,48 @@ public class FileDownLoad {
 		}
 	}
 
-	public static void DownloadFile(String hostname, int port, String user_name, String password, String remote_Path,
-			String local_Path, String regex_Match) {
+	public static String downloadFile() {
 		CkSsh ssh = new CkSsh();
 		CkGlobal ck = new CkGlobal();
-		ck.UnlockBundle("Nhom 6");// mã mở khóa
-		boolean success = ssh.Connect(hostname, port);
+		ck.UnlockBundle("Team 6 ......................");
+		// 1. Connect source
+		int port = 2227;
+		// Connect to an SSH server and establish the SSH:
+		boolean success = ssh.Connect(DBConnection.hostName, port);
 		if (success != true) {
 			System.out.println(ssh.lastErrorText());
-			return;
+			return "FAIL";
 		}
 		ssh.put_IdleTimeoutMs(5000);
-		success = ssh.AuthenticatePw(user_name, password);
+		// 2. authentication: user && pass
+		success = ssh.AuthenticatePw(DBControl.username, DBControl.password);
 		if (success != true) {
 			System.out.println(ssh.lastErrorText());
-			return;
+			return "FAIL";
 		}
 		CkScp scp = new CkScp();
-
+		// 3. open port ssh to go
 		success = scp.UseSsh(ssh);
 		if (success != true) {
 			System.out.println(scp.lastErrorText());
-			return;
+			return "FAIL";
 		}
-		scp.put_SyncMustMatch(regex_Match);// download tất cả các file bắt đầu bằng sinhvien_chieu
-		success = scp.SyncTreeDownload(remote_Path, local_Path, 2, false);
+		// 4. dowload file in local
+		scp.put_SyncMustMatch("sinhvien*.*");// down tat ca cac file bat dau
+												// bang sinhvien
+		// 5. 2: file was already exits not down continute
+		success = scp.SyncTreeDownload(DBControl.remotePath, DBControl.localPath, 2, false);
+		//
+
 		if (success != true) {
 			System.out.println(scp.lastErrorText());
-			return;
+			return "FAIL";
 		}
+
+		System.out.println("SCP dowload file success");
 		ssh.Disconnect();
 
+		return "SUCCESS";
 	}
 
-	public static void main(String[] args) {
-		FileDownLoad.DownloadFile("drive.ecepvn.org", 2227, "guest_access", "123456",
-				"/volume1/ECEP/song.nguyen/DW_2020/data", "F:\\HK6-2020\\DataWareHouse_ThaySong\\SCP_DownLoad",
-				"sinhvien*.*.xlsx");
-	}
 }
