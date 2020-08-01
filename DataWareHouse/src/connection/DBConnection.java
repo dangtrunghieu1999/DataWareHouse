@@ -45,6 +45,8 @@ public class DBConnection {
 					return con;
 				} else if (dbname.equalsIgnoreCase("Staging") && STAGING.equals(url)) {
 					return con;
+				} else if (dbname.equalsIgnoreCase("SCP_DOWNLOAD") && STAGING.equals(url)) {
+					return con;
 				} else {
 					new DBConnection(dbname);
 					return con;

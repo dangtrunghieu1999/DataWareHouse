@@ -23,5 +23,8 @@
 	<classpathentry kind="lib" path="/Users/dangtrunghieu/Downloads/poi-4.1.2/xmlbeans-3.1.0.jar"/>
 	<classpathentry kind="lib" path="/Users/dangtrunghieu/Downloads/poi-4.1.2/commons-lang-2.4.jar"/>
 	<classpathentry kind="lib" path="poi-4.1.2/chilkat.jar"/>
+	<classpathentry kind="lib" path="/Users/dangtrunghieu/Downloads/poi-4.1.2/activation-1.1.jar"/>
+	<classpathentry kind="lib" path="poi-4.1.2/activation-1.1.jar"/>
+	<classpathentry kind="lib" path="poi-4.1.2/javax.mail.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
