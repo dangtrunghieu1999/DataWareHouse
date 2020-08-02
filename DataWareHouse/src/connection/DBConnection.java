@@ -7,11 +7,11 @@ import java.sql.SQLException;
 public class DBConnection {
 
 	static Connection con;
-	static String WAREHOUSE = "jdbc:mysql://localhost:3306/Datawarehouse";
+	static String WAREHOUSE = "jdbc:mysql://localhost/WareHouse";
 	static String CONTROLDB = "jdbc:mysql://localhost/Control";
-	static String STAGING = "jdbc:mysql://localhost/Staging";
-	static String username = "root";
-	static String password = "trunghieu230899";
+	static String STAGING   = "jdbc:mysql://localhost/Staging";
+	static String username  = "root";
+	static String password  = "trunghieu230899";
 
 	private DBConnection(String dbname) {
 		try {
@@ -41,7 +41,7 @@ public class DBConnection {
 				 //khác thì new mới connection theo dbname
 				if (dbname.equalsIgnoreCase("CONTROL") && CONTROLDB.equals(url)) {
 					return con;
-				} else if (dbname.equalsIgnoreCase("WAREHOUSE") && WAREHOUSE.equals(url)) {
+				} else if (dbname.equalsIgnoreCase("WareHouse") && WAREHOUSE.equals(url)) {
 					return con;
 				} else if (dbname.equalsIgnoreCase("Staging") && STAGING.equals(url)) {
 					return con;

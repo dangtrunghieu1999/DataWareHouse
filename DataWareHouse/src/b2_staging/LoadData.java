@@ -104,28 +104,28 @@ public class LoadData {
 			connection.commit();
 			
 			// đếm số dòng đã đc load vào db tạm ở Staging 
-			String queryCount = "Select count(*) from " + table_name;
-			Statement st = connection.createStatement();
-			ResultSet rs = st.executeQuery(queryCount);
+//			String queryCount = "Select count(*) from " + table_name;
+//			Statement st = connection.createStatement();
+//			ResultSet rs = st.executeQuery(queryCount);
+//			
+//			rs.next();
+//		    int count = rs.getInt(1);
+//		    
+//			int row = Support.getRow();
 			
-			rs.next();
-		    int count = rs.getInt(1);
-		    
-			int row = Support.getRow();
-			
-			if (count == row) {
-				updateStatusFile(id, file_name, count);
-				MoveFileStatus.moveFileToSuccess(filePath);
-				long end = System.currentTimeMillis();
-				SendMail.sendMail(MailConfig.EMAIL_RECEIVER, MailConfig.EMAIL_TITLE, "Successfully!");
-				System.out.printf("Import done in %d ms\n", (end - start));
-			} 
-			else {
-				System.out.println("number or row no match");
-				MoveFileStatus.moveFileToError(filePath);
-				System.out.println("Load file that bai");
-				SendMail.sendMail(MailConfig.EMAIL_RECEIVER, MailConfig.EMAIL_TITLE, "Fail!");
-			}
+//			if (count == row) {
+//				updateStatusFile(id, file_name, count);
+//				MoveFileStatus.moveFileToSuccess(filePath);
+//				long end = System.currentTimeMillis();
+//				SendMail.sendMail(MailConfig.EMAIL_RECEIVER, MailConfig.EMAIL_TITLE, "Successfully!");
+//				System.out.printf("Import done in %d ms\n", (end - start));
+//			} 
+//			else {
+//				System.out.println("number or row no match");
+//				MoveFileStatus.moveFileToError(filePath);
+//				System.out.println("Load file that bai");
+//				SendMail.sendMail(MailConfig.EMAIL_RECEIVER, MailConfig.EMAIL_TITLE, "Fail!");
+//			}
 
 		} catch (SQLException e) {
 			e.printStackTrace();
