@@ -19,13 +19,13 @@ public class LoadData {
 			System.out.println("connect success");
 			// Ket noi voi DB table control
 			
-			Connection connectDB = DBConnection.getConnection("CONTROLDB");
+			Connection connectDB = DBConnection.getConnection("Control");
 			Statement st = connectDB.createStatement();
 			
 			String query = "select *"
 							+ " from logs join config on config.id = logs.id_config"
 							+ " where logs.id_config = " + id_config 
-							+ " and logs.status = 'ER' limit 1";
+							+ " and logs.status = 'ER' " + "and config.flag = 'st' " + " limit 1" ;
 			// execute query
 			
 			ResultSet rs = st.executeQuery(query);
@@ -57,7 +57,7 @@ public class LoadData {
 		Date endDate = new Date();
 		Connection connection = null;
 		try {
-			connection = DBConnection.getConnection("CONTROLDB");
+			connection = DBConnection.getConnection("Control");
 			  String query = "update logs set status = ?, time_load_staging = ?, number_row =? where file_name = ? and stt = ?" ;
 		      PreparedStatement preparedStmt = connection.prepareStatement(query);
 		      preparedStmt.setString(1,"TR");
@@ -67,6 +67,11 @@ public class LoadData {
 		      preparedStmt.setInt(5, id);
 		      preparedStmt.executeUpdate();
 		      System.out.println("success update logs" + file_name);
+		      String queryProcess = "update config set config.flag = 'wh' ";
+		      PreparedStatement preparedStmtProcess = connection.prepareStatement(queryProcess);
+		      preparedStmtProcess.execute();
+		      System.out.println("success update config process wh" );
+		      
 		      connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -104,28 +109,28 @@ public class LoadData {
 			connection.commit();
 			
 			// đếm số dòng đã đc load vào db tạm ở Staging 
-//			String queryCount = "Select count(*) from " + table_name;
-//			Statement st = connection.createStatement();
-//			ResultSet rs = st.executeQuery(queryCount);
-//			
-//			rs.next();
-//		    int count = rs.getInt(1);
-//		    
-//			int row = Support.getRow();
+			String queryCount = "Select count(*) from " + table_name;
+			Statement st = connection.createStatement();
+			ResultSet rs = st.executeQuery(queryCount);
 			
-//			if (count == row) {
-//				updateStatusFile(id, file_name, count);
-//				MoveFileStatus.moveFileToSuccess(filePath);
-//				long end = System.currentTimeMillis();
-//				SendMail.sendMail(MailConfig.EMAIL_RECEIVER, MailConfig.EMAIL_TITLE, "Successfully!");
-//				System.out.printf("Import done in %d ms\n", (end - start));
-//			} 
-//			else {
-//				System.out.println("number or row no match");
-//				MoveFileStatus.moveFileToError(filePath);
-//				System.out.println("Load file that bai");
-//				SendMail.sendMail(MailConfig.EMAIL_RECEIVER, MailConfig.EMAIL_TITLE, "Fail!");
-//			}
+			rs.next();
+		    int count = rs.getInt(1);
+		    
+			int row = Support.getRow();
+			
+			if (count == row) {
+				updateStatusFile(id, file_name, count);
+				MoveFileStatus.moveFileToSuccess(filePath);
+				long end = System.currentTimeMillis();
+				SendMail.sendMail(MailConfig.EMAIL_RECEIVER, MailConfig.EMAIL_TITLE, "Successfully!");
+				System.out.printf("Import done in %d ms\n", (end - start));
+			} 
+			else {
+				System.out.println("number or row no match");
+				MoveFileStatus.moveFileToError(filePath);
+				System.out.println("Load file that bai");
+				SendMail.sendMail(MailConfig.EMAIL_RECEIVER, MailConfig.EMAIL_TITLE, "Fail!");
+			}
 
 		} catch (SQLException e) {
 			e.printStackTrace();

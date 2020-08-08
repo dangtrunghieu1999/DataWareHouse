@@ -8,18 +8,18 @@ public class DBConnection {
 
 	static Connection con;
 	static String WAREHOUSE = "jdbc:mysql://localhost/WareHouse";
-	static String CONTROLDB = "jdbc:mysql://localhost/Control";
+	static String CONTROL = "jdbc:mysql://localhost/Control";
 	static String STAGING   = "jdbc:mysql://localhost/Staging";
 	static String username  = "root";
 	static String password  = "trunghieu230899";
 
 	private DBConnection(String dbname) {
 		try {
-			if (dbname.equals("CONTROLDB")) {
+			if (dbname.equals("Control")) {
 
-				con = DriverManager.getConnection(CONTROLDB, username, password);
+				con = DriverManager.getConnection(CONTROL, username, password);
 
-			} else if (dbname.equals("WAREHOUSE")) {
+			} else if (dbname.equals("WareHouse")) {
 				con = DriverManager.getConnection(WAREHOUSE, username, password);
 			} else {
 				con = DriverManager.getConnection(STAGING, username, password);
@@ -39,13 +39,11 @@ public class DBConnection {
 				 // kiểm tra cái DB muốn lấy và DB hiện tại có giống nhau
 				 //giống thì trả về con
 				 //khác thì new mới connection theo dbname
-				if (dbname.equalsIgnoreCase("CONTROL") && CONTROLDB.equals(url)) {
+				if (dbname.equalsIgnoreCase("Control") && CONTROL.equals(url)) {
 					return con;
 				} else if (dbname.equalsIgnoreCase("WareHouse") && WAREHOUSE.equals(url)) {
 					return con;
 				} else if (dbname.equalsIgnoreCase("Staging") && STAGING.equals(url)) {
-					return con;
-				} else if (dbname.equalsIgnoreCase("SCP_DOWNLOAD") && STAGING.equals(url)) {
 					return con;
 				} else {
 					new DBConnection(dbname);
