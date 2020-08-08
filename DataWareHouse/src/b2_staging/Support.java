@@ -23,6 +23,7 @@ public class Support {
 	static final String ACTIVE_DATE = "31-12-2013";
 	static final String DATE_FORMAT = "yyyy-MM-dd";
 	public static int row = 0;
+	
 	static public String filePath(String source, String file_name) {
 		StringBuffer sourceFile = new StringBuffer(source);
 		sourceFile.append("/");
@@ -50,6 +51,8 @@ public class Support {
 	}
 
 	static String readValuesTXT(File s_file, int column) {
+		int countRow = 0;
+		
 		if (!s_file.exists()) {
 			return null;
 		}
@@ -58,17 +61,29 @@ public class Support {
 		try {
 			BufferedReader bReader = new BufferedReader(new InputStreamReader(new FileInputStream(s_file), "utf8"));
 			String line = bReader.readLine();
+			
+			// kiem tra vi tri cuoi cung cua read line 
 			if (line.indexOf("\t") != -1) {
 				delim = "\t";
 			}
+			
+			// kiem tra readline dau tien co phai la header khong neu khong thi add vao chuoi value
+			
 			if (Pattern.matches(NUMBER_REGEX, line.split(delim)[0])) {
 				values += readLines(line + delim, delim);
+				countRow++;
 			}
+			// read line tung dong trong file 
+			
 			while ((line = bReader.readLine()) != null) {
-
+				countRow++;
 				values += readLines(line + " " + delim, delim);
 			}
+			
 			bReader.close();
+			setRow(countRow);
+			countRow = 0;
+			
 			return values.substring(0, values.length() - 1);
 
 		} catch (NoSuchElementException | IOException e) {
@@ -85,24 +100,39 @@ public class Support {
 		int countRow = 0;
 		try {
 			FileInputStream fileIn = new FileInputStream(file);
+			// bo file vao workbook
+			
 			XSSFWorkbook workBook = new XSSFWorkbook(fileIn);
+			// chon mac dinh la sheet 0
 			XSSFSheet sheet = workBook.getSheetAt(0);
+			
+			// lay data row o hang dau tien 
+			
 			Iterator<Row> rows = sheet.iterator();
 
+			// kiem tra row la header file thi bo qua next row tiep theo
+			
 			if (rows.next().cellIterator().next().getCellType().equals(CellType.NUMERIC)) {
 				rows = sheet.iterator();
 			}
+			
+			// kiem tra row tiep theo co khong
+			
 			while (rows.hasNext()) {
 				countRow++;
+				
 				Row row = rows.next();
 				for (int i = 0; i < column; i++) {
-//					if (i == column - 1) {
-//						value += ACTIVE_DATE;
-//					}
+					
+					// tu tao du lieu trong khi column trong row trong
+					
 					Cell cell = row.getCell(i, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+					
+					// kiem tra cell kieu gi de conver du lieu khong bi sai
+					
 					CellType cellType = cell.getCellType();
 					switch (cellType) {
-					case NUMERIC:
+					case NUMERIC: // numeric kieu du lieu int, double
 						if (DateUtil.isCellDateFormatted(cell)) {
 							SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
 							value += dateFormat.format(cell.getDateCellValue()) + delim;
@@ -110,7 +140,7 @@ public class Support {
 							value += (long) cell.getNumericCellValue() + delim;
 						}
 						break;
-					case STRING:
+					case STRING:// kieu du lieu chu String
 						value += cell.getStringCellValue() + delim;
 						break;
 					case FORMULA:
