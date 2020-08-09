@@ -24,6 +24,8 @@ public class Support {
 	static final String DATE_FORMAT = "yyyy-MM-dd";
 	public static int row = 0;
 	
+	// noi file nguon voi ten file de lay ra file du lieu
+	
 	static public String filePath(String source, String file_name) {
 		StringBuffer sourceFile = new StringBuffer(source);
 		sourceFile.append("/");

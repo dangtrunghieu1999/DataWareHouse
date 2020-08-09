@@ -16,12 +16,13 @@ public class LoadData {
 
 	public void loadFromSourceFile(int id_config) {
 		try {
-			System.out.println("connect success");
+			
 			// Ket noi voi DB table control
 			
 			Connection connectDB = DBConnection.getConnection("Control");
 			Connection connectDB = DBConnection.getConnection("CONTROLDB");
 			Statement st = connectDB.createStatement();
+			System.out.println("connect success");
 			
 			String query = "select *"
 							+ " from logs join config on config.id = logs.id_config"
@@ -44,7 +45,9 @@ public class LoadData {
 				column_number = rs.getInt("column_number");
 				
 				// load file local from to Staging
-				loadToStaging(id, status, file_name, source, table_name, column_number, table_name,src_type);
+				loadToStaging(id_config,id, status, file_name, source, table_name, column_number, table_name,src_type);
+			} else {
+				System.out.println("result set is Empty");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -54,7 +57,7 @@ public class LoadData {
 	
 	// thay doi trang thai file 
 	
-	public void updateStatusFile(int id,String file_name, int numberRows) {
+	public void updateStatusFile(int id,String file_name, int numberRows, int id_config) {
 		Date endDate = new Date();
 		Connection connection = null;
 		try {
@@ -68,7 +71,7 @@ public class LoadData {
 		      preparedStmt.setInt(5, id);
 		      preparedStmt.executeUpdate();
 		      System.out.println("success update logs" + file_name);
-		      String queryProcess = "update config set config.flag = 'wh' ";
+		      String queryProcess = "update config set config.flag = 'wh' where config.id = " + id_config;
 		      PreparedStatement preparedStmtProcess = connection.prepareStatement(queryProcess);
 		      preparedStmtProcess.execute();
 		      System.out.println("success update config process wh" );
@@ -80,7 +83,7 @@ public class LoadData {
 		}
 	}
 	
-	public void loadToStaging(int id, String status ,String file_name,
+	public void loadToStaging(int id_config,int id, String status ,String file_name,
 							String source, String des, int column_number, String table_name, String src_type) {
 		// nối thư mục ở local + filename  ra filepath
 		String filePath = Support.filePath(source, file_name);
@@ -120,7 +123,7 @@ public class LoadData {
 			int row = Support.getRow();
 			
 			if (count == row) {
-				updateStatusFile(id, file_name, count);
+				updateStatusFile(id, file_name, count, id_config);
 				MoveFileStatus.moveFileToSuccess(filePath);
 				long end = System.currentTimeMillis();
 				SendMail.sendMail(MailConfig.EMAIL_RECEIVER, MailConfig.EMAIL_TITLE, "Successfully!");

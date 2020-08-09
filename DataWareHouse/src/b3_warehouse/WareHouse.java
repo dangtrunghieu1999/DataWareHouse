@@ -20,29 +20,33 @@ public class WareHouse {
 		try {
 			connectDB = DBConnection.getConnection("Control");
 			Statement st = connectDB.createStatement();
-			String query = "select table_name from config where id = " + id_config + " and flag = 'wh'";
+			String query = "select table_name from config where id = " + id_config
+					+ " and flag = 'wh' ";
 			System.out.println(query);
 			ResultSet rs = st.executeQuery(query);
-			rs.next();
-			String table_name = rs.getString("table_name");
-			
-			switch (table_name) {
-			case STUDENT:
-				addStudentDB();
-				break;
-			case SUBJECT:
-				addSubjectDB();
-				break;
-			case CLASS:
-				addClassDB();
-				break;
+			if (rs.next()) {
+				String table_name = rs.getString("table_name");
 				
-			case REGISTER:
-				System.out.println("c");
-				break;
-				
-			default:
-				break;
+				switch (table_name) {
+				case STUDENT:
+					addStudentDB(table_name);
+					break;
+				case SUBJECT:
+					addSubjectDB(table_name);
+					break;
+				case CLASS:
+					addClassDB();
+					break;
+					
+				case REGISTER:
+					System.out.println("c");
+					break;
+					
+				default:
+					break;
+				}
+			}else {
+				System.out.println("result set is Empty");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -52,7 +56,7 @@ public class WareHouse {
 	
 	
 	
-	public void addStudentDB() {
+	public void addStudentDB(String tableName) {
 		long start = System.currentTimeMillis();
 			Connection connectDB;
 			try {
@@ -63,6 +67,9 @@ public class WareHouse {
 				long end = System.currentTimeMillis();
 				System.out.printf("Import done load in %d ms\n", (end - start));
 				updateProcessWh();
+				updateStatusLog();
+				trucateTableStaging(tableName);
+				System.out.println("Successfull");
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -80,8 +87,34 @@ public class WareHouse {
 		}
 	}
 	
+	public void updateStatusLog() {
+		Connection connectDB;
+		try {
+			connectDB = DBConnection.getConnection("Control");
+			String query = "update logs set logs.status = 'Complete' where logs.status = 'TR' ";
+			PreparedStatement statement = connectDB.prepareStatement(query);
+			statement.execute();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 	
-	public void addSubjectDB() {
+	public void trucateTableStaging(String table) {
+		Connection connectDB;
+		try {
+			connectDB = DBConnection.getConnection("Staging");
+			String query = "TRUNCATE " + table;
+			PreparedStatement statement = connectDB.prepareStatement(query);
+			statement.execute();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public void addSubjectDB(String tableName) {
 		long start = System.currentTimeMillis();
 			Connection connectDB;
 			try {
@@ -91,6 +124,9 @@ public class WareHouse {
 				statement.execute();
 				long end = System.currentTimeMillis();
 				System.out.printf("Import done load in %d ms\n", (end - start));
+				updateProcessWh();
+				updateStatusLog();
+				trucateTableStaging(tableName);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -110,11 +146,9 @@ public class WareHouse {
 				e.printStackTrace();
 			}
 	}
-	
-	
-	
 	public static void main(String[] args) {
 		WareHouse wh = new WareHouse();
 		wh.transformToWareHouse(1);
 	}
+	
 }
