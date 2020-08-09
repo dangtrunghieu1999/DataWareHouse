@@ -24,5 +24,10 @@
 	<classpathentry kind="lib" path="/Users/dangtrunghieu/Downloads/poi-4.1.2/commons-lang-2.4.jar"/>
 	<classpathentry kind="lib" path="poi-4.1.2/chilkat.jar"/>
 	<classpathentry kind="lib" path="chilkat.jar"/>
+	<classpathentry kind="lib" path="commons-email-1.5.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Thuy Hang/Downloads/FILEJAR/FILEJAR/activation-2.2.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Thuy Hang/Downloads/FILEJAR/FILEJAR/javax.mail.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Thuy Hang/Downloads/FILEJAR/FILEJAR/json-simple-1.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Thuy Hang/Downloads/FILEJAR/FILEJAR/mysql-connector-java-5.1.47-bin.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
