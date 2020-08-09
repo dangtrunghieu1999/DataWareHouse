@@ -13,7 +13,7 @@ public class DBConnection {
 	static String username  = "root";
 	static String password  = "trunghieu230899";
 
-	private DBConnection(String dbname) {
+	public DBConnection(String dbname) {
 		try {
 			if (dbname.equals("Control")) {
 
