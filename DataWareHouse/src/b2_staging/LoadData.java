@@ -20,7 +20,6 @@ public class LoadData {
 			// Ket noi voi DB table control
 			
 			Connection connectDB = DBConnection.getConnection("Control");
-			Connection connectDB = DBConnection.getConnection("CONTROLDB");
 			Statement st = connectDB.createStatement();
 			System.out.println("connect success");
 			
