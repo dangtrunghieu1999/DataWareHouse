@@ -1,4 +1,4 @@
-package b1_donwload;
+package b1_download;
 
 import java.io.File;
 import java.sql.Connection;
