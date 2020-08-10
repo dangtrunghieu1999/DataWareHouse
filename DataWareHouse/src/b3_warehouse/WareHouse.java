@@ -18,6 +18,7 @@ public class WareHouse {
 	public void transformToWareHouse(int id_config) {
 		Connection connectDB;//khởi tạo kết nối
 		try {
+<<<<<<< HEAD
 			connectDB = DBConnection.getConnection("Control");//kết nối đến db control
 			Statement st = connectDB.createStatement();//tạo statement
 			String query = "select table_name from config where id = " + id_config
@@ -26,6 +27,16 @@ public class WareHouse {
 			ResultSet rs = st.executeQuery(query);//duyệt rs
 			if (rs.next()) {
 				String table_name = rs.getString("table_name");//nếu đúng thì trả về proceduce tương ứng
+=======
+			connectDB = DBConnection.getConnection("Control");
+			Statement st = connectDB.createStatement();
+			String query = "select table_name from config where id = " + id_config
+					+ " and flag = 'wh' ";
+			System.out.println(query);
+			ResultSet rs = st.executeQuery(query);
+			if (rs.next()) {
+				String table_name = rs.getString("table_name");
+>>>>>>> develop
 				
 				switch (table_name) {
 				case STUDENT:
@@ -46,7 +57,11 @@ public class WareHouse {
 					break;
 				}
 			}else {
+<<<<<<< HEAD
 				System.out.println("result set is Empty");//ngược lại thì...
+=======
+				System.out.println("result set is Empty");
+>>>>>>> develop
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -56,6 +71,7 @@ public class WareHouse {
 	
 	
 	
+<<<<<<< HEAD
 	public void addStudentDB(String tableName) {//phương thức addStudent sẽ tham chiếu tới Stored Procedure
 		long start = System.currentTimeMillis(); //time start trong hệ thống
 			Connection connectDB;
@@ -69,29 +85,62 @@ public class WareHouse {
 				updateProcessWh();//create
 				updateStatusLog();//create
 				trucateTableStaging(tableName);//create
+=======
+	public void addStudentDB(String tableName) {
+		long start = System.currentTimeMillis();
+			Connection connectDB;
+			try {
+				connectDB = DBConnection.getConnection("WareHouse");
+				String query = "{CALL addStudent() }";
+				PreparedStatement statement = connectDB.prepareStatement(query);
+				statement.execute();
+				long end = System.currentTimeMillis();
+				System.out.printf("Import done load in %d ms\n", (end - start));
+				updateProcessWh();
+				updateStatusLog();
+				trucateTableStaging(tableName);
+>>>>>>> develop
 				System.out.println("Successfull");
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 	}
+<<<<<<< HEAD
 	//update process
 	public void updateProcessWh() {
 		Connection connectDB;
 		try {
 			connectDB = DBConnection.getConnection("Control");//kết nối đến db control
 			String query = "update config set config.flag = 'st' ";//khi config đã được load xong thì cờ từ 'wh' đổi thành 'st' 
+=======
+	
+	public void updateProcessWh() {
+		Connection connectDB;
+		try {
+			connectDB = DBConnection.getConnection("Control");
+			String query = "update config set config.flag = 'st' ";
+>>>>>>> develop
 			PreparedStatement statement = connectDB.prepareStatement(query);
 			statement.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
+<<<<<<< HEAD
 	//thay đổi trạng thái log
 	public void updateStatusLog() {
 		Connection connectDB;
 		try {
 			connectDB = DBConnection.getConnection("Control");//kết nối đến db control
 			String query = "update logs set logs.status = 'Complete' where logs.status = 'TR' ";//thay đổi trang thái khi load xong từ'TR' thành'Complete'
+=======
+	
+	public void updateStatusLog() {
+		Connection connectDB;
+		try {
+			connectDB = DBConnection.getConnection("Control");
+			String query = "update logs set logs.status = 'Complete' where logs.status = 'TR' ";
+>>>>>>> develop
 			PreparedStatement statement = connectDB.prepareStatement(query);
 			statement.execute();
 			
@@ -99,7 +148,11 @@ public class WareHouse {
 			e.printStackTrace();
 		}
 	}
+<<<<<<< HEAD
 	//xóa dữ liệu cũ ở table staging
+=======
+	
+>>>>>>> develop
 	public void trucateTableStaging(String table) {
 		Connection connectDB;
 		try {
@@ -151,4 +204,8 @@ public class WareHouse {
 		wh.transformToWareHouse(1);
 	}
 	
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> develop

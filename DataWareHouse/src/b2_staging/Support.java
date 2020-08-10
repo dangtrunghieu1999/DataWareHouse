@@ -18,11 +18,14 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+// ho tro doc file du lieu theo src
 public class Support {
 	static final String NUMBER_REGEX = "^[0-9]+$";
 	static final String ACTIVE_DATE = "31-12-2013";
 	static final String DATE_FORMAT = "yyyy-MM-dd";
 	public static int row = 0;
+	
+	// noi file nguon voi ten file de lay ra file du lieu
 	
 	static public String filePath(String source, String file_name) {
 		StringBuffer sourceFile = new StringBuffer(source);
@@ -34,14 +37,18 @@ public class Support {
 	
 	private static String readLines(String value, String delim) {
 		String values = "";
+		//khoi tao token de lay value theo delim
 		StringTokenizer stoken = new StringTokenizer(value, delim);
-		int countToken = stoken.countTokens();
+	
+		int countToken = stoken.countTokens(); // dem count cua column
 		String lines = "(";
 		for (int j = 0; j < countToken; j++) {
 			String token = stoken.nextToken();
 			if (Pattern.matches(NUMBER_REGEX, token)) {
+				// neu la so thi khong de nhay '
 				lines += (j == countToken - 1) ? token.trim() + ")," : token.trim() + ",";
 			} else {
+				// neu la chu thi de vao dau ' '
 				lines += (j == countToken - 1) ? "'" + token.trim() + "')," : "'" + token.trim() + "',";
 			}
 			values += lines;
