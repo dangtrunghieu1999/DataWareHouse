@@ -69,12 +69,15 @@ public class LoadData {
 		      preparedStmt.setString(4, file_name);
 		      preparedStmt.setInt(5, id);
 		      preparedStmt.executeUpdate();
+		      preparedStmt.close();
 		      System.out.println("success update logs" + file_name);
 		      String queryProcess = "update config set config.flag = 'wh' where config.id = " + id_config;
 		      PreparedStatement preparedStmtProcess = connection.prepareStatement(queryProcess);
 		      preparedStmtProcess.execute();
 		      System.out.println("success update config process wh" );
 		      
+		     
+		      preparedStmtProcess.close();
 		      connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -134,6 +137,9 @@ public class LoadData {
 				System.out.println("Load file that bai");
 				SendMail.sendMail(MailConfig.EMAIL_RECEIVER, MailConfig.EMAIL_TITLE, "Fail!");
 			}
+			statement.close();
+			st.close();
+			connection.close();
 
 		} catch (SQLException e) {
 			e.printStackTrace();
