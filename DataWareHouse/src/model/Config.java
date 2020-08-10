@@ -23,28 +23,6 @@ public class Config {
 	private String name_table_warehouse;
 	
 	
-	public Config(int id_Config, String name_Config, String hostName, int port, String userNameAccount,
-			String passwordAccount, String file_Format, String remote_Dir, String local_Dir, String name_db_Control,
-			String name_table_config, String name_table_log, String name_db_Staging,
-			String name_db_Warehouse) {
-		super();
-		this.id_Config = id_Config;
-		this.name_Config = name_Config;
-		this.hostName = hostName;
-		this.port = port;
-		this.userNameAccount = userNameAccount;
-		this.passwordAccount = passwordAccount;
-		this.file_Format = file_Format;
-		this.remote_Dir = remote_Dir;
-		this.local_Dir = local_Dir;
-		this.name_db_Control = name_db_Control;
-		this.name_table_config = name_table_config;
-		this.name_table_log = name_table_log;
-		this.name_db_Staging = name_db_Staging;
-		this.name_table_staging = name_table_staging;
-		this.name_db_Warehouse = name_db_Warehouse;
-		this.name_table_warehouse = name_table_warehouse;
-	}
 	public int getId_Config() {
 		return id_Config;
 	}

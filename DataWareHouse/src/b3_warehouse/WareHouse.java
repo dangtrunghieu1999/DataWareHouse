@@ -1,46 +1,67 @@
 package b3_warehouse;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 
-import com.mysql.jdbc.CallableStatement;
 
 import connection.DBConnection;
-import model.Student;
 
 public class WareHouse {
-	public static final String STUDENT = "Student";
-	public static final String SUBJECT = "Subject";
-	public static final String DANGKY  = "DangKy";
+	public static final String STUDENT   = "Student";
+	public static final String SUBJECT   = "Subject";
+	public static final String CLASS   	 = "Class";
+	public static final String REGISTER  = "Register";
 	
 	public void transformToWareHouse(int id_config) {
-		Connection connectDB;
+		Connection connectDB;//khởi tạo kết nối
 		try {
-			connectDB = DBConnection.getConnection("CONTROLDB");
+<<<<<<< HEAD
+			connectDB = DBConnection.getConnection("Control");//kết nối đến db control
+			Statement st = connectDB.createStatement();//tạo statement
+			String query = "select table_name from config where id = " + id_config
+					+ " and flag = 'wh' "; //lấy ra tablename có gắn flag = 'wh'
+			System.out.println(query);
+			ResultSet rs = st.executeQuery(query);//duyệt rs
+			if (rs.next()) {
+				String table_name = rs.getString("table_name");//nếu đúng thì trả về proceduce tương ứng
+=======
+			connectDB = DBConnection.getConnection("Control");
 			Statement st = connectDB.createStatement();
-			String query = "select table_name from config where id = " + id_config ;
+			String query = "select table_name from config where id = " + id_config
+					+ " and flag = 'wh' ";
 			System.out.println(query);
 			ResultSet rs = st.executeQuery(query);
-			rs.next();
-			String table_name = rs.getString("table_name");
-			
-			switch (table_name) {
-			case STUDENT:
-				getListDataStudent();
-				break;
-			case SUBJECT:
-				System.out.println("b");
-				break;
+			if (rs.next()) {
+				String table_name = rs.getString("table_name");
+>>>>>>> develop
 				
-			case DANGKY:
-				System.out.println("c");
-				break;
-				
-			default:
-				break;
+				switch (table_name) {
+				case STUDENT:
+					addStudentDB(table_name);
+					break;
+				case SUBJECT:
+					addSubjectDB(table_name);
+					break;
+				case CLASS:
+					addClassDB();
+					break;
+					
+				case REGISTER:
+					System.out.println("c");
+					break;
+					
+				default:
+					break;
+				}
+			}else {
+<<<<<<< HEAD
+				System.out.println("result set is Empty");//ngược lại thì...
+=======
+				System.out.println("result set is Empty");
+>>>>>>> develop
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -48,83 +69,143 @@ public class WareHouse {
 		
 	}
 	
-	public void getListDataStudent() {
-		Connection connectDB;
-		long start = System.currentTimeMillis();
-		try {
-			connectDB = DBConnection.getConnection("Staging");
-			Statement st = connectDB.createStatement();
-			String query = "select * from Student";
-			System.out.println(query);
-			ResultSet rs = st.executeQuery(query);
-			ArrayList<Student> listStudents = new ArrayList<Student>();
-			String mssv,holot,ten,ngaysinh,lop,tenlop,sdt,email,quequan,ghichu;
-			
-			while(rs.next()) {
-				 mssv  		= rs.getString("f2");
-				 holot 		= rs.getString("f3");
-				 ten	 	= rs.getString("f4");
-				 ngaysinh 	= rs.getString("f5");
-				 lop		= rs.getString("f6");
-				 tenlop  	= rs.getString("f7");
-				 sdt 		= rs.getString("f8");
-				 email    	= rs.getString("f9");
-				 quequan  	= rs.getString("f10");
-				 ghichu   	= rs.getString("f11");
-				
-				 Student s = new Student();
-				 s.setStudentId(mssv);
-				 s.setFirstName(holot);
-				 s.setLastName(ten);
-				 s.setBirthDay(ngaysinh);
-				 s.setClassId(lop);
-				 s.setClassName(tenlop);
-				 s.setPhoneNumber(sdt);
-				 s.setEmail(email);
-				 s.setHomeTown(quequan);
-				 s.setNotes(ghichu);
-				 listStudents.add(s);
-			}
-			System.out.println(listStudents.size());
-			long end = System.currentTimeMillis();
-		
-			addStudentDB(listStudents);
-			System.out.printf("Import done in %d ms\n", (end - start));
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
 	
-	public void addStudentDB(ArrayList<Student> list) {
+	
+<<<<<<< HEAD
+	public void addStudentDB(String tableName) {//phương thức addStudent sẽ tham chiếu tới Stored Procedure
+		long start = System.currentTimeMillis(); //time start trong hệ thống
+			Connection connectDB;
+			try {
+				connectDB = DBConnection.getConnection("WareHouse");//kết nối đến db warehoue
+				String query = "{CALL addStudent() }";//gọi đến procedure allStudent trong mysql
+				PreparedStatement statement = connectDB.prepareStatement(query);
+				statement.execute();
+				long end = System.currentTimeMillis();//time end trong hệ thống
+				System.out.printf("Import done load in %d ms\n", (end - start));
+				updateProcessWh();//create
+				updateStatusLog();//create
+				trucateTableStaging(tableName);//create
+=======
+	public void addStudentDB(String tableName) {
 		long start = System.currentTimeMillis();
-		int size = list.size();
 			Connection connectDB;
 			try {
 				connectDB = DBConnection.getConnection("WareHouse");
-				String query = "{CALL WareHouse.inser_student(?,?,?,?,?,?,?,?,?,?)}";
-				CallableStatement stmt = (CallableStatement) connectDB.prepareCall(query);
-				for (int i = 0; i < size; i++) {
-				stmt.setString(1, list.get(i).getStudentId());
-				stmt.setString(2, list.get(i).getFirstName());
-				stmt.setString(3, list.get(i).getLastName());
-				stmt.setString(4, list.get(i).getBirthDay());
-				stmt.setString(5, list.get(i).getClassId());
-				stmt.setString(6, list.get(i).getClassName());
-				stmt.setString(7, list.get(i).getPhoneNumber());
-				stmt.setString(8, list.get(i).getEmail());
-				stmt.setString(9, list.get(i).getHomeTown());
-				stmt.setString(10, list.get(i).getNotes());
-				stmt.executeQuery();
-				}
+				String query = "{CALL addStudent() }";
+				PreparedStatement statement = connectDB.prepareStatement(query);
+				statement.execute();
+				long end = System.currentTimeMillis();
+				System.out.printf("Import done load in %d ms\n", (end - start));
+				updateProcessWh();
+				updateStatusLog();
+				trucateTableStaging(tableName);
+>>>>>>> develop
+				System.out.println("Successfull");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+	}
+<<<<<<< HEAD
+	//update process
+	public void updateProcessWh() {
+		Connection connectDB;
+		try {
+			connectDB = DBConnection.getConnection("Control");//kết nối đến db control
+			String query = "update config set config.flag = 'st' ";//khi config đã được load xong thì cờ từ 'wh' đổi thành 'st' 
+=======
+	
+	public void updateProcessWh() {
+		Connection connectDB;
+		try {
+			connectDB = DBConnection.getConnection("Control");
+			String query = "update config set config.flag = 'st' ";
+>>>>>>> develop
+			PreparedStatement statement = connectDB.prepareStatement(query);
+			statement.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+<<<<<<< HEAD
+	//thay đổi trạng thái log
+	public void updateStatusLog() {
+		Connection connectDB;
+		try {
+			connectDB = DBConnection.getConnection("Control");//kết nối đến db control
+			String query = "update logs set logs.status = 'Complete' where logs.status = 'TR' ";//thay đổi trang thái khi load xong từ'TR' thành'Complete'
+=======
+	
+	public void updateStatusLog() {
+		Connection connectDB;
+		try {
+			connectDB = DBConnection.getConnection("Control");
+			String query = "update logs set logs.status = 'Complete' where logs.status = 'TR' ";
+>>>>>>> develop
+			PreparedStatement statement = connectDB.prepareStatement(query);
+			statement.execute();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+<<<<<<< HEAD
+	//xóa dữ liệu cũ ở table staging
+=======
+	
+>>>>>>> develop
+	public void trucateTableStaging(String table) {
+		Connection connectDB;
+		try {
+			connectDB = DBConnection.getConnection("Staging");
+			String query = "TRUNCATE " + table;
+			PreparedStatement statement = connectDB.prepareStatement(query);
+			statement.execute();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public void addSubjectDB(String tableName) {
+		long start = System.currentTimeMillis();
+			Connection connectDB;
+			try {
+				connectDB = DBConnection.getConnection("WareHouse");
+				String query = "{CALL addSubject() }";
+				PreparedStatement statement = connectDB.prepareStatement(query);
+				statement.execute();
+				long end = System.currentTimeMillis();
+				System.out.printf("Import done load in %d ms\n", (end - start));
+				updateProcessWh();
+				updateStatusLog();
+				trucateTableStaging(tableName);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+	}
+	
+	public void addClassDB() {
+		long start = System.currentTimeMillis();
+			Connection connectDB;
+			try {
+				connectDB = DBConnection.getConnection("WareHouse");
+				String query = "{CALL addClass()}";
+				PreparedStatement statement = connectDB.prepareStatement(query);
+				statement.execute();
 				long end = System.currentTimeMillis();
 				System.out.printf("Import done load in %d ms\n", (end - start));
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 	}
-	
 	public static void main(String[] args) {
 		WareHouse wh = new WareHouse();
 		wh.transformToWareHouse(1);
 	}
+	
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> develop

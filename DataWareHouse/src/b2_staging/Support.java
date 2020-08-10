@@ -18,11 +18,15 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+// ho tro doc file du lieu theo src
 public class Support {
 	static final String NUMBER_REGEX = "^[0-9]+$";
 	static final String ACTIVE_DATE = "31-12-2013";
 	static final String DATE_FORMAT = "yyyy-MM-dd";
 	public static int row = 0;
+	
+	// noi file nguon voi ten file de lay ra file du lieu
+	
 	static public String filePath(String source, String file_name) {
 		StringBuffer sourceFile = new StringBuffer(source);
 		sourceFile.append("/");
@@ -33,14 +37,18 @@ public class Support {
 	
 	private static String readLines(String value, String delim) {
 		String values = "";
+		//khoi tao token de lay value theo delim
 		StringTokenizer stoken = new StringTokenizer(value, delim);
-		int countToken = stoken.countTokens();
+	
+		int countToken = stoken.countTokens(); // dem count cua column
 		String lines = "(";
 		for (int j = 0; j < countToken; j++) {
 			String token = stoken.nextToken();
 			if (Pattern.matches(NUMBER_REGEX, token)) {
+				// neu la so thi khong de nhay '
 				lines += (j == countToken - 1) ? token.trim() + ")," : token.trim() + ",";
 			} else {
+				// neu la chu thi de vao dau ' '
 				lines += (j == countToken - 1) ? "'" + token.trim() + "')," : "'" + token.trim() + "',";
 			}
 			values += lines;
@@ -50,6 +58,8 @@ public class Support {
 	}
 
 	static String readValuesTXT(File s_file, int column) {
+		int countRow = 0;
+		
 		if (!s_file.exists()) {
 			return null;
 		}
@@ -58,17 +68,29 @@ public class Support {
 		try {
 			BufferedReader bReader = new BufferedReader(new InputStreamReader(new FileInputStream(s_file), "utf8"));
 			String line = bReader.readLine();
+			
+			// kiem tra vi tri cuoi cung cua read line 
 			if (line.indexOf("\t") != -1) {
 				delim = "\t";
 			}
+			
+			// kiem tra readline dau tien co phai la header khong neu khong thi add vao chuoi value
+			
 			if (Pattern.matches(NUMBER_REGEX, line.split(delim)[0])) {
 				values += readLines(line + delim, delim);
+				countRow++;
 			}
+			// read line tung dong trong file 
+			
 			while ((line = bReader.readLine()) != null) {
-
+				countRow++;
 				values += readLines(line + " " + delim, delim);
 			}
+			
 			bReader.close();
+			setRow(countRow);
+			countRow = 0;
+			
 			return values.substring(0, values.length() - 1);
 
 		} catch (NoSuchElementException | IOException e) {
@@ -85,24 +107,39 @@ public class Support {
 		int countRow = 0;
 		try {
 			FileInputStream fileIn = new FileInputStream(file);
+			// bo file vao workbook
+			
 			XSSFWorkbook workBook = new XSSFWorkbook(fileIn);
+			// chon mac dinh la sheet 0
 			XSSFSheet sheet = workBook.getSheetAt(0);
+			
+			// lay data row o hang dau tien 
+			
 			Iterator<Row> rows = sheet.iterator();
 
+			// kiem tra row la header file thi bo qua next row tiep theo
+			
 			if (rows.next().cellIterator().next().getCellType().equals(CellType.NUMERIC)) {
 				rows = sheet.iterator();
 			}
+			
+			// kiem tra row tiep theo co khong
+			
 			while (rows.hasNext()) {
 				countRow++;
+				
 				Row row = rows.next();
 				for (int i = 0; i < column; i++) {
-//					if (i == column - 1) {
-//						value += ACTIVE_DATE;
-//					}
+					
+					// tu tao du lieu trong khi column trong row trong
+					
 					Cell cell = row.getCell(i, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+					
+					// kiem tra cell kieu gi de conver du lieu khong bi sai
+					
 					CellType cellType = cell.getCellType();
 					switch (cellType) {
-					case NUMERIC:
+					case NUMERIC: // numeric kieu du lieu int, double
 						if (DateUtil.isCellDateFormatted(cell)) {
 							SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
 							value += dateFormat.format(cell.getDateCellValue()) + delim;
@@ -110,7 +147,7 @@ public class Support {
 							value += (long) cell.getNumericCellValue() + delim;
 						}
 						break;
-					case STRING:
+					case STRING:// kieu du lieu chu String
 						value += cell.getStringCellValue() + delim;
 						break;
 					case FORMULA:

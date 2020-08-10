@@ -1,7 +1,7 @@
 package common;
 
 public class MailConfig {
-
+	
 	public static final String HOST_NAME = "smtp.gmail.com";
 	 
     public static final int TSL_PORT = 587;  
