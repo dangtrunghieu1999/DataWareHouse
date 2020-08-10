@@ -48,6 +48,8 @@ public class WareHouse {
 			}else {
 				System.out.println("result set is Empty");
 			}
+			st.close();
+			connectDB.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -70,6 +72,8 @@ public class WareHouse {
 				updateStatusLog();
 				trucateTableStaging(tableName);
 				System.out.println("Successfull");
+				statement.close();
+				connectDB.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -82,6 +86,8 @@ public class WareHouse {
 			String query = "update config set config.flag = 'st' ";
 			PreparedStatement statement = connectDB.prepareStatement(query);
 			statement.execute();
+			statement.close();
+			connectDB.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -94,7 +100,8 @@ public class WareHouse {
 			String query = "update logs set logs.status = 'Complete' where logs.status = 'TR' ";
 			PreparedStatement statement = connectDB.prepareStatement(query);
 			statement.execute();
-			
+			statement.close();
+			connectDB.close();		
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -107,7 +114,8 @@ public class WareHouse {
 			String query = "TRUNCATE " + table;
 			PreparedStatement statement = connectDB.prepareStatement(query);
 			statement.execute();
-			
+			statement.close();
+			connectDB.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -127,6 +135,8 @@ public class WareHouse {
 				updateProcessWh();
 				updateStatusLog();
 				trucateTableStaging(tableName);
+				statement.close();
+				connectDB.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -142,6 +152,8 @@ public class WareHouse {
 				statement.execute();
 				long end = System.currentTimeMillis();
 				System.out.printf("Import done load in %d ms\n", (end - start));
+				statement.close();
+				connectDB.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}

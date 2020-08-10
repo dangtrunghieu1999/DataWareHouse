@@ -48,6 +48,9 @@ public class LoadData {
 			} else {
 				System.out.println("result set is Empty");
 			}
+			
+			st.close();
+			connectDB.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -76,7 +79,6 @@ public class LoadData {
 		      preparedStmtProcess.execute();
 		      System.out.println("success update config process wh" );
 		      
-		     
 		      preparedStmtProcess.close();
 		      connection.close();
 		} catch (SQLException e) {
