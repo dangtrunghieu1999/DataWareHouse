@@ -164,7 +164,7 @@ public class DownloadAndInsertLog {
 					ps.setString(3, log.getStatus());
 					ps.setString(4, log.getComment());
 					ps.setString(5, log.getTime_download());
-					ps.setString(6, log.getTime_uploadStraging());
+					ps.setString(6, log.getTime_uploadStaging());
 					ps.setString(7, log.getTime_Warehouse());
 
 					ps.execute();

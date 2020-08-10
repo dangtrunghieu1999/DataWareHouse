@@ -10,7 +10,7 @@ public class Log {
 	private String urlLocal;
 	
 	private String time_download;
-	private String time_uploadStraging;
+	private String time_uploadStaging;
 	private String time_Warehouse;
 	
 	public String getComment() {
@@ -52,11 +52,11 @@ public class Log {
 	public void setTime_download(String time_download) {
 		this.time_download = time_download;
 	}
-	public String getTime_uploadStraging() {
-		return time_uploadStraging;
+	public String getTime_uploadStaging() {
+		return time_uploadStaging;
 	}
-	public void setTime_uploadStraging(String time_uploadStraging) {
-		this.time_uploadStraging = time_uploadStraging;
+	public void setTime_uploadStraging(String time_uploadStaging) {
+		this.time_uploadStaging = time_uploadStaging;
 	}
 	public String getTime_Warehouse() {
 		return time_Warehouse;
