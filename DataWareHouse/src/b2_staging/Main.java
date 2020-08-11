@@ -12,10 +12,6 @@ public class Main {
 		WareHouse wh = new WareHouse();
 		wh.transformToWareHouse(id);
 	
-		LoadData load = new LoadData();
-		load.loadFromSourceFile(id);
-		WareHouse wh = new WareHouse();
-		wh.transformToWareHouse(id);
 	
 	}
 	
