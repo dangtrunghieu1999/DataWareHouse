@@ -51,7 +51,7 @@ public class WareHouse {
 					break;
 
 				case REGISTER:
-					System.out.println("c");
+				addRegister();
 					break;
 
 				default:
@@ -135,7 +135,6 @@ public class WareHouse {
 		}
 	}
 
-	// xóa dữ liệu cũ ở table staging
 
 	public void addSubjectDB(String tableName) {
 		long start = System.currentTimeMillis();
@@ -168,7 +167,24 @@ public class WareHouse {
 			e.printStackTrace();
 		}
 	}
-
+public void addRegister() {
+		long start = System.currentTimeMillis();
+			Connection connectDB;
+			try {
+				connectDB = DBConnection.getConnection("WareHouse");
+				String query = "{CALL addRegister()}";
+				PreparedStatement statement = connectDB.prepareStatement(query);
+				statement.execute();
+				long end = System.currentTimeMillis();
+				System.out.printf("Import done load in %d ms\n", (end - start));
+				updateProcessWh();
+				updateStatusLog();
+				statement.close();
+				connectDB.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+	}
 	public static void main(String[] args) {
 		WareHouse wh = new WareHouse();
 		wh.transformToWareHouse(1);
