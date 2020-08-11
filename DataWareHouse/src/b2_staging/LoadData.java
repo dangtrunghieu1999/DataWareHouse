@@ -42,7 +42,7 @@ public class LoadData {
 				source 	  	  = rs.getString("source");
 				table_name	  = rs.getString("table_name");
 				column_number = rs.getInt("column_number");
-				
+				trucateTableStaging(table_name);
 				// load file local from to Staging
 				loadToStaging(id_config,id, status, file_name, source, table_name, column_number, table_name,src_type);
 			} else {
@@ -55,6 +55,21 @@ public class LoadData {
 			e.printStackTrace();
 		}
 
+	}
+	
+	
+	public void trucateTableStaging(String table) {
+		Connection connectDB;
+		try {
+			connectDB = DBConnection.getConnection("Staging");
+			String query = "TRUNCATE " + table;
+			PreparedStatement statement = connectDB.prepareStatement(query);
+			statement.execute();
+			statement.close();
+			connectDB.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	// thay doi trang thai file 

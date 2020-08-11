@@ -39,7 +39,7 @@ public class WareHouse {
 					break;
 					
 				case REGISTER:
-					System.out.println("c");
+					addRegister();
 					break;
 					
 				default:
@@ -70,7 +70,6 @@ public class WareHouse {
 				System.out.printf("Import done load in %d ms\n", (end - start));
 				updateProcessWh();
 				updateStatusLog();
-				trucateTableStaging(tableName);
 				System.out.println("Successfull");
 				statement.close();
 				connectDB.close();
@@ -107,19 +106,6 @@ public class WareHouse {
 		}
 	}
 	
-	public void trucateTableStaging(String table) {
-		Connection connectDB;
-		try {
-			connectDB = DBConnection.getConnection("Staging");
-			String query = "TRUNCATE " + table;
-			PreparedStatement statement = connectDB.prepareStatement(query);
-			statement.execute();
-			statement.close();
-			connectDB.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
 	
 	
 	public void addSubjectDB(String tableName) {
@@ -134,7 +120,7 @@ public class WareHouse {
 				System.out.printf("Import done load in %d ms\n", (end - start));
 				updateProcessWh();
 				updateStatusLog();
-				trucateTableStaging(tableName);
+				
 				statement.close();
 				connectDB.close();
 			} catch (SQLException e) {
@@ -152,15 +138,38 @@ public class WareHouse {
 				statement.execute();
 				long end = System.currentTimeMillis();
 				System.out.printf("Import done load in %d ms\n", (end - start));
+				updateProcessWh();
+				updateStatusLog();
 				statement.close();
 				connectDB.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 	}
+	
+	
+	public void addRegister() {
+		long start = System.currentTimeMillis();
+			Connection connectDB;
+			try {
+				connectDB = DBConnection.getConnection("WareHouse");
+				String query = "{CALL addRegister()}";
+				PreparedStatement statement = connectDB.prepareStatement(query);
+				statement.execute();
+				long end = System.currentTimeMillis();
+				System.out.printf("Import done load in %d ms\n", (end - start));
+				updateProcessWh();
+				updateStatusLog();
+				statement.close();
+				connectDB.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+	}
+	
 	public static void main(String[] args) {
 		WareHouse wh = new WareHouse();
-		wh.transformToWareHouse(1);
+		wh.transformToWareHouse(3);
 	}
 	
 }
