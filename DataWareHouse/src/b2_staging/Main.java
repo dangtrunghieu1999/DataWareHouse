@@ -12,6 +12,12 @@ public class Main {
 		WareHouse wh = new WareHouse();
 		wh.transformToWareHouse(id);
 	
+		LoadData load = new LoadData();
+		load.loadFromSourceFile(3);
+		
+		
+		WareHouse wh = new WareHouse();
+		wh.transformToWareHouse(3);
 	}
 	
 }

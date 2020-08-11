@@ -18,7 +18,6 @@ public class WareHouse {
 	public void transformToWareHouse(int id_config) {
 		Connection connectDB;//khởi tạo kết nối
 		try {
-<<<<<<< HEAD
 			connectDB = DBConnection.getConnection("Control");//kết nối đến db control
 			Statement st = connectDB.createStatement();//tạo statement
 			String query = "select table_name from config where id = " + id_config
@@ -27,16 +26,6 @@ public class WareHouse {
 			ResultSet rs = st.executeQuery(query);//duyệt rs
 			if (rs.next()) {
 				String table_name = rs.getString("table_name");//nếu đúng thì trả về proceduce tương ứng
-=======
-			connectDB = DBConnection.getConnection("Control");
-			Statement st = connectDB.createStatement();
-			String query = "select table_name from config where id = " + id_config
-					+ " and flag = 'wh' ";
-			System.out.println(query);
-			ResultSet rs = st.executeQuery(query);
-			if (rs.next()) {
-				String table_name = rs.getString("table_name");
->>>>>>> develop
 				
 				switch (table_name) {
 				case STUDENT:
@@ -50,7 +39,7 @@ public class WareHouse {
 					break;
 					
 				case REGISTER:
-					System.out.println("c");
+					addRegister();
 					break;
 					
 				default:
@@ -63,6 +52,8 @@ public class WareHouse {
 				System.out.println("result set is Empty");
 >>>>>>> develop
 			}
+			st.close();
+			connectDB.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -98,9 +89,14 @@ public class WareHouse {
 				System.out.printf("Import done load in %d ms\n", (end - start));
 				updateProcessWh();
 				updateStatusLog();
+<<<<<<< HEAD
 				trucateTableStaging(tableName);
 >>>>>>> develop
+=======
+>>>>>>> feature/TrungHieu
 				System.out.println("Successfull");
+				statement.close();
+				connectDB.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -122,6 +118,8 @@ public class WareHouse {
 >>>>>>> develop
 			PreparedStatement statement = connectDB.prepareStatement(query);
 			statement.execute();
+			statement.close();
+			connectDB.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -143,7 +141,8 @@ public class WareHouse {
 >>>>>>> develop
 			PreparedStatement statement = connectDB.prepareStatement(query);
 			statement.execute();
-			
+			statement.close();
+			connectDB.close();		
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -152,6 +151,7 @@ public class WareHouse {
 	//xóa dữ liệu cũ ở table staging
 =======
 	
+<<<<<<< HEAD
 >>>>>>> develop
 	public void trucateTableStaging(String table) {
 		Connection connectDB;
@@ -165,6 +165,8 @@ public class WareHouse {
 			e.printStackTrace();
 		}
 	}
+=======
+>>>>>>> feature/TrungHieu
 	
 	
 	public void addSubjectDB(String tableName) {
@@ -179,7 +181,9 @@ public class WareHouse {
 				System.out.printf("Import done load in %d ms\n", (end - start));
 				updateProcessWh();
 				updateStatusLog();
-				trucateTableStaging(tableName);
+				
+				statement.close();
+				connectDB.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -195,13 +199,38 @@ public class WareHouse {
 				statement.execute();
 				long end = System.currentTimeMillis();
 				System.out.printf("Import done load in %d ms\n", (end - start));
+				updateProcessWh();
+				updateStatusLog();
+				statement.close();
+				connectDB.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 	}
+	
+	
+	public void addRegister() {
+		long start = System.currentTimeMillis();
+			Connection connectDB;
+			try {
+				connectDB = DBConnection.getConnection("WareHouse");
+				String query = "{CALL addRegister()}";
+				PreparedStatement statement = connectDB.prepareStatement(query);
+				statement.execute();
+				long end = System.currentTimeMillis();
+				System.out.printf("Import done load in %d ms\n", (end - start));
+				updateProcessWh();
+				updateStatusLog();
+				statement.close();
+				connectDB.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+	}
+	
 	public static void main(String[] args) {
 		WareHouse wh = new WareHouse();
-		wh.transformToWareHouse(1);
+		wh.transformToWareHouse(3);
 	}
 	
 <<<<<<< HEAD
