@@ -1,22 +1,24 @@
 package b3_warehouse;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-
+import common.MailConfig;
+import common.SendMail;
 import connection.DBConnection;
 
 public class WareHouse {
-	public static final String STUDENT   = "Student";
-	public static final String SUBJECT   = "Subject";
-	public static final String CLASS   	 = "Class";
-	public static final String REGISTER  = "Register";
-	
+	public static final String STUDENT = "Student";
+	public static final String SUBJECT = "Subject";
+	public static final String CLASS = "Class";
+	public static final String REGISTER = "Register";
+
 	public void transformToWareHouse(int id_config) {
-		Connection connectDB;//khởi tạo kết nối
+		Connection connectDB;// khởi tạo kết nối
 		try {
 			connectDB = DBConnection.getConnection("Control");//kết nối đến db control
 			Statement st = connectDB.createStatement();//tạo statement
@@ -37,46 +39,27 @@ public class WareHouse {
 				case CLASS:
 					addClassDB();
 					break;
-					
+
 				case REGISTER:
 					addRegister();
 					break;
-					
+
 				default:
 					break;
 				}
-			}else {
-<<<<<<< HEAD
-				System.out.println("result set is Empty");//ngược lại thì...
-=======
+			} else {
+				//ngược lại thì thì send mail báo lỗi
 				System.out.println("result set is Empty");
->>>>>>> develop
+				SendMail.sendMail(MailConfig.EMAIL_RECEIVER, MailConfig.EMAIL_TITLE, "Result set is Empty!");
 			}
 			st.close();
 			connectDB.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
-	
-	
-<<<<<<< HEAD
-	public void addStudentDB(String tableName) {//phương thức addStudent sẽ tham chiếu tới Stored Procedure
-		long start = System.currentTimeMillis(); //time start trong hệ thống
-			Connection connectDB;
-			try {
-				connectDB = DBConnection.getConnection("WareHouse");//kết nối đến db warehoue
-				String query = "{CALL addStudent() }";//gọi đến procedure allStudent trong mysql
-				PreparedStatement statement = connectDB.prepareStatement(query);
-				statement.execute();
-				long end = System.currentTimeMillis();//time end trong hệ thống
-				System.out.printf("Import done load in %d ms\n", (end - start));
-				updateProcessWh();//create
-				updateStatusLog();//create
-				trucateTableStaging(tableName);//create
-=======
+// phương thức addStudent nhận vào tableName tham chiếu tới procedure tương tứng trong Stored Procedure
 	public void addStudentDB(String tableName) {
 		long start = System.currentTimeMillis();
 			Connection connectDB;
@@ -89,11 +72,7 @@ public class WareHouse {
 				System.out.printf("Import done load in %d ms\n", (end - start));
 				updateProcessWh();
 				updateStatusLog();
-<<<<<<< HEAD
 				trucateTableStaging(tableName);
->>>>>>> develop
-=======
->>>>>>> feature/TrungHieu
 				System.out.println("Successfull");
 				statement.close();
 				connectDB.close();
@@ -101,21 +80,41 @@ public class WareHouse {
 				e.printStackTrace();
 			}
 	}
-<<<<<<< HEAD
 	//update process
 	public void updateProcessWh() {
 		Connection connectDB;
 		try {
-			connectDB = DBConnection.getConnection("Control");//kết nối đến db control
-			String query = "update config set config.flag = 'st' ";//khi config đã được load xong thì cờ từ 'wh' đổi thành 'st' 
-=======
-	
+			connectDB = DBConnection.getConnection("WareHouse");// kết nối
+																// đến db
+																// warehoue
+			String query = "{CALL addStudent() }";// gọi đến procedure
+													// allStudent trong mysql
+			PreparedStatement statement = connectDB.prepareStatement(query);
+			statement.execute();
+			long end = System.currentTimeMillis();// time end trong hệ thống
+			System.out.printf("Import done load in %d ms\n", (end - start));
+			//cập nhật flag thành 'st'
+			updateProcessWh();
+			//thay đổi status trong log thành 'Complete'
+			updateStatusLog();
+			//xóa dữ liệu ở table staging
+			truncateTableStaging(tableName);
+			System.out.println("Successfull");
+			SendMail.sendMail(MailConfig.EMAIL_RECEIVER, MailConfig.EMAIL_TITLE, "Successfull");
+		} catch (SQLException e) {
+			e.printStackTrace();
+			SendMail.sendMail(MailConfig.EMAIL_RECEIVER, MailConfig.EMAIL_TITLE, "Fail!");
+		}
+	}
+
+	// update process
 	public void updateProcessWh() {
 		Connection connectDB;
 		try {
-			connectDB = DBConnection.getConnection("Control");
+			connectDB = DBConnection.getConnection("Control");// kết nối đến db control
+			// khi load xong dữ liệu thì flag sẽ thay đổi 'wh' đổi thành 'st'
 			String query = "update config set config.flag = 'st' ";
->>>>>>> develop
+																	
 			PreparedStatement statement = connectDB.prepareStatement(query);
 			statement.execute();
 			statement.close();
@@ -124,21 +123,14 @@ public class WareHouse {
 			e.printStackTrace();
 		}
 	}
-<<<<<<< HEAD
-	//thay đổi trạng thái log
+
+	// thay đổi trạng thái log
 	public void updateStatusLog() {
 		Connection connectDB;
 		try {
-			connectDB = DBConnection.getConnection("Control");//kết nối đến db control
-			String query = "update logs set logs.status = 'Complete' where logs.status = 'TR' ";//thay đổi trang thái khi load xong từ'TR' thành'Complete'
-=======
-	
-	public void updateStatusLog() {
-		Connection connectDB;
-		try {
-			connectDB = DBConnection.getConnection("Control");
+			connectDB = DBConnection.getConnection("Control");// kết nối đến db control
+			//thay đổi trang thái khi load dữ liệu xong từ'TR' thành'Complete'												
 			String query = "update logs set logs.status = 'Complete' where logs.status = 'TR' ";
->>>>>>> develop
 			PreparedStatement statement = connectDB.prepareStatement(query);
 			statement.execute();
 			statement.close();
@@ -147,26 +139,23 @@ public class WareHouse {
 			e.printStackTrace();
 		}
 	}
-<<<<<<< HEAD
-	//xóa dữ liệu cũ ở table staging
-=======
 	
-<<<<<<< HEAD
->>>>>>> develop
 	public void trucateTableStaging(String table) {
+
+	// xóa dữ liệu cũ ở table staging
+	private void truncateTableStaging(String table) {
 		Connection connectDB;
 		try {
 			connectDB = DBConnection.getConnection("Staging");
 			String query = "TRUNCATE " + table;
 			PreparedStatement statement = connectDB.prepareStatement(query);
 			statement.execute();
-			
+			statement.close();
+			connectDB.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
-=======
->>>>>>> feature/TrungHieu
 	
 	
 	public void addSubjectDB(String tableName) {
@@ -187,8 +176,29 @@ public class WareHouse {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+	// phương thức addSubjectnhận vào tableName tham chiếu tới procedure tương tứng trong Stored Procedure
+	public void addSubjectDB(String tableName) {
+		long start = System.currentTimeMillis();
+		Connection connectDB;
+		try {
+			connectDB = DBConnection.getConnection("WareHouse");
+			String query = "{CALL addSubject() }";
+			PreparedStatement statement = connectDB.prepareStatement(query);
+			statement.execute();
+			long end = System.currentTimeMillis();
+			System.out.printf("Import done load in %d ms\n", (end - start));
+			updateProcessWh();
+			updateStatusLog();
+			truncateTableStaging(tableName);
+			System.out.println("Successfull");
+			SendMail.sendMail(MailConfig.EMAIL_RECEIVER, MailConfig.EMAIL_TITLE, "Successfull");
+		} catch (SQLException e) {
+			e.printStackTrace();
+			SendMail.sendMail(MailConfig.EMAIL_RECEIVER, MailConfig.EMAIL_TITLE, "Fail!");
+		}
 	}
-	
+
+	// phương thức addClassDB nhận vào tableName tham chiếu tới procedure tương tứng trong Stored Procedure
 	public void addClassDB() {
 		long start = System.currentTimeMillis();
 			Connection connectDB;
@@ -232,9 +242,5 @@ public class WareHouse {
 		WareHouse wh = new WareHouse();
 		wh.transformToWareHouse(3);
 	}
-	
-<<<<<<< HEAD
+
 }
-=======
-}
->>>>>>> develop
