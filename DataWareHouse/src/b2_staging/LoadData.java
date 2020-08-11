@@ -26,7 +26,7 @@ public class LoadData {
 			String query = "select *"
 							+ " from logs join config on config.id = logs.id_config"
 							+ " where logs.id_config = " + id_config 
-							+ " and logs.status = 'ER' limit 1";
+							+ " and logs.status = 'ER' " + "and config.flag = 'st' " + " limit 1" ;
 			// execute query
 			
 			ResultSet rs = st.executeQuery(query);
